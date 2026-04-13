@@ -1,8 +1,8 @@
 import {
-  ChangeDetectionStrategy, Component, inject, signal,
+  ChangeDetectionStrategy, Component, computed, inject, signal,
 } from '@angular/core';
 import { DataService } from '../../../core/services/data.service';
-import { Item } from '../../../core/models/item.model';
+import { Item, ItemCategory, ItemStatus } from '../../../core/models/item.model';
 import { ItemListComponent } from '../item-list/item-list.component';
 import { ItemFormComponent, ItemFormPayload } from '../item-form/item-form.component';
 import { FilterBarComponent, FilterState } from '../filter-bar/filter-bar.component';
@@ -38,10 +38,10 @@ import { FilterBarComponent, FilterState } from '../filter-bar/filter-bar.compon
         }
       </div>
 
-      <!-- Item list -->
+      <!-- Item list  -->
       <div class="px-4 pb-28 space-y-3">
         <app-item-list
-          [items]="dataService.items()"
+          [items]="filteredItems()"
           (edit)="openForm($event)"
           (delete)="onDelete($event)"
           (statusChange)="onStatusChange($event)"
@@ -79,6 +79,16 @@ export class PantryPageComponent {
 
   // Filter state
   readonly filters = signal<FilterState>({ category: 'all', status: 'all' });
+
+  // Computed filtered list
+  readonly filteredItems = computed<Item[]>(() => {
+    const { category, status } = this.filters();
+    return this.dataService.items().filter(item => {
+      if (category !== 'all' && item.category !== (category as ItemCategory)) return false;
+      if (status  !== 'all' && item.status   !== (status  as ItemStatus))   return false;
+      return true;
+    });
+  });
 
   // Form state
   readonly showForm    = signal(false);
