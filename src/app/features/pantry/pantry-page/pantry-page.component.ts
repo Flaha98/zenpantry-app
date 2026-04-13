@@ -5,14 +5,23 @@ import { DataService } from '../../../core/services/data.service';
 import { Item } from '../../../core/models/item.model';
 import { ItemListComponent } from '../item-list/item-list.component';
 import { ItemFormComponent, ItemFormPayload } from '../item-form/item-form.component';
+import { FilterBarComponent, FilterState } from '../filter-bar/filter-bar.component';
 
 @Component({
   selector: 'app-pantry-page',
   standalone: true,
-  imports: [ItemListComponent, ItemFormComponent],
+  imports: [ItemListComponent, ItemFormComponent, FilterBarComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-gray-50">
+
+      <!-- Filter bar -->
+      <div class="sticky top-16 z-30 bg-gray-50/95 backdrop-blur-sm border-b border-gray-100 px-4 py-3">
+        <app-filter-bar
+          [filters]="filters()"
+          (filtersChange)="filters.set($event)"
+        />
+      </div>
 
       <!-- Stats strip -->
       <div class="px-4 py-3 flex items-center gap-2 text-sm overflow-x-auto">
@@ -49,12 +58,12 @@ import { ItemFormComponent, ItemFormPayload } from '../item-form/item-form.compo
         (click)="openForm(null)"
         aria-label="Add item"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        <svg ...>
+          ...
         </svg>
       </button>
 
-      <!-- Form modal / bottom sheet -->
+      <!-- Form modal -->
       @if (showForm()) {
         <app-item-form
           [item]="editingItem()"
@@ -67,6 +76,9 @@ import { ItemFormComponent, ItemFormPayload } from '../item-form/item-form.compo
 })
 export class PantryPageComponent {
   readonly dataService = inject(DataService);
+
+  // Filter state
+  readonly filters = signal<FilterState>({ category: 'all', status: 'all' });
 
   // Form state
   readonly showForm    = signal(false);
@@ -82,7 +94,6 @@ export class PantryPageComponent {
     this.editingItem.set(null);
   }
 
-  // CRUD handlers
   onSave(payload: ItemFormPayload): void {
     const editing = this.editingItem();
     if (editing) {
