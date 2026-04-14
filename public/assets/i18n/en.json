@@ -1,0 +1,56 @@
+{
+  "app.title": "ZenPantry",
+  "app.subtitle": "Your smart home pantry",
+
+  "header.theme.light": "Light mode",
+  "header.theme.dark": "Dark mode",
+
+  "filters.all": "All",
+  "filters.category": "Category",
+  "filters.status": "Status",
+  "filters.pending": "Pending",
+  "filters.in_cart": "In Cart",
+  "filters.purchased": "Purchased",
+
+  "categories.fruits": "Fruits",
+  "categories.vegetables": "Vegetables",
+  "categories.dairy": "Dairy",
+  "categories.meat": "Meat",
+  "categories.bakery": "Bakery",
+  "categories.beverages": "Beverages",
+  "categories.cleaning": "Cleaning",
+  "categories.other": "Other",
+
+  "units.unit": "unit",
+  "units.kg": "kg",
+  "units.g": "g",
+  "units.l": "L",
+  "units.ml": "mL",
+  "units.pack": "pack",
+  "units.box": "box",
+  "units.bag": "bag",
+
+  "item.add": "Add Item",
+  "item.edit": "Edit Item",
+  "item.delete": "Delete",
+  "item.save": "Save",
+  "item.cancel": "Cancel",
+  "item.name": "Name",
+  "item.quantity": "Quantity",
+  "item.unit": "Unit",
+  "item.category": "Category",
+  "item.status": "Status",
+  "item.name.placeholder": "e.g. Apples",
+  "item.quantity.placeholder": "3",
+
+  "toast.added": "Item added!",
+  "toast.updated": "Item updated!",
+  "toast.deleted": "Item removed.",
+
+  "stats.items": "items",
+  "stats.pending": "pending",
+  "stats.in_cart": "in cart",
+
+  "empty.title": "Your pantry is empty",
+  "empty.subtitle": "Tap + to add your first item"
+}

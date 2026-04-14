@@ -1,0 +1,56 @@
+{
+  "app.title": "ZenPantry",
+  "app.subtitle": "A sua despensa inteligente",
+
+  "header.theme.light": "Modo claro",
+  "header.theme.dark": "Modo escuro",
+
+  "filters.all": "Todos",
+  "filters.category": "Categoria",
+  "filters.status": "Estado",
+  "filters.pending": "Pendente",
+  "filters.in_cart": "No Carrinho",
+  "filters.purchased": "Comprado",
+
+  "categories.fruits": "Frutas",
+  "categories.vegetables": "Legumes",
+  "categories.dairy": "Laticínios",
+  "categories.meat": "Carne",
+  "categories.bakery": "Padaria",
+  "categories.beverages": "Bebidas",
+  "categories.cleaning": "Limpeza",
+  "categories.other": "Outros",
+
+  "units.unit": "un",
+  "units.kg": "kg",
+  "units.g": "g",
+  "units.l": "L",
+  "units.ml": "mL",
+  "units.pack": "pacote",
+  "units.box": "caixa",
+  "units.bag": "saco",
+
+  "item.add": "Adicionar Item",
+  "item.edit": "Editar Item",
+  "item.delete": "Eliminar",
+  "item.save": "Guardar",
+  "item.cancel": "Cancelar",
+  "item.name": "Nome",
+  "item.quantity": "Quantidade",
+  "item.unit": "Unidade",
+  "item.category": "Categoria",
+  "item.status": "Estado",
+  "item.name.placeholder": "ex: Maçãs",
+  "item.quantity.placeholder": "3",
+
+  "toast.added": "Item adicionado!",
+  "toast.updated": "Item atualizado!",
+  "toast.deleted": "Item removido.",
+
+  "stats.items": "itens",
+  "stats.pending": "pendentes",
+  "stats.in_cart": "no carrinho",
+
+  "empty.title": "A sua despensa está vazia",
+  "empty.subtitle": "Toque em + para adicionar o primeiro item"
+}
