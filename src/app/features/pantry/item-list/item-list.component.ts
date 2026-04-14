@@ -12,14 +12,14 @@ import { Item, CATEGORY_CONFIG } from '../../../core/models/item.model';
     <!-- Empty state -->
     @if (items.length === 0) {
       <div class="flex flex-col items-center justify-center py-20 gap-4">
-        <div class="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center text-5xl">
+        <div class="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-5xl">
           🛒
         </div>
         <div class="text-center">
-          <p class="font-semibold text-gray-700 text-lg">
+          <p class="font-semibold text-gray-700 dark:text-gray-300 text-lg">
             Your pantry is empty
           </p>
-          <p class="text-gray-400 text-sm mt-1">
+          <p class="text-gray-400 dark:text-gray-500 text-sm mt-1">
             Tap the + button to add your first item
           </p>
         </div>
@@ -48,14 +48,14 @@ import { Item, CATEGORY_CONFIG } from '../../../core/models/item.model';
           <div class="flex-1 min-w-0">
             <p
               class="font-semibold text-base leading-tight transition-all duration-300"
-              [class]="item.status === 'purchased' ? 'line-through opacity-50' : 'text-charcoal'"
+              [class]="item.status === 'purchased' ? 'line-through opacity-50' : 'text-charcoal dark:text-white'"
             >{{ item.name }}</p>
             <div class="flex items-center gap-2 mt-0.5 flex-wrap">
-              <span class="text-sm text-gray-500">
+              <span class="text-sm text-gray-500 dark:text-gray-400">
                 {{ item.quantity }}&nbsp;{{ unitLabel(item.unit) }}
               </span>
-              <span class="w-1 h-1 bg-gray-300 rounded-full flex-shrink-0"></span>
-              <span class="text-xs text-gray-400">
+              <span class="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full flex-shrink-0"></span>
+              <span class="text-xs text-gray-400 dark:text-gray-500">
                 {{ categoryLabel(item.category) }}
               </span>
             </div>
@@ -72,7 +72,9 @@ import { Item, CATEGORY_CONFIG } from '../../../core/models/item.model';
             <!-- Edit -->
             <button
               class="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-150
-                     text-gray-400 hover:bg-gray-100 hover:text-gray-700 active:scale-90"
+                     text-gray-400 dark:text-gray-500
+                     hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200
+                     active:scale-90"
               (click)="edit.emit(item)"
               aria-label="Edit"
             >
@@ -85,7 +87,9 @@ import { Item, CATEGORY_CONFIG } from '../../../core/models/item.model';
             <!-- Delete -->
             <button
               class="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-150
-                     text-gray-400 hover:bg-red-50 hover:text-red-500 active:scale-90"
+                     text-gray-400 dark:text-gray-500
+                     hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 dark:hover:text-red-400
+                     active:scale-90"
               (click)="delete.emit(item.id)"
               aria-label="Delete"
             >
@@ -99,7 +103,7 @@ import { Item, CATEGORY_CONFIG } from '../../../core/models/item.model';
 
         <!-- In-cart status bar at bottom -->
         @if (item.status === 'in_cart') {
-          <div class="h-0.5 bg-sage/30">
+          <div class="h-0.5 bg-sage/30 dark:bg-sage/40">
             <div class="h-full bg-sage w-2/3 rounded-full"></div>
           </div>
         }
@@ -115,29 +119,27 @@ export class ItemListComponent {
 
   cardClass(item: Item): string {
     if (item.status === 'in_cart') {
-      return 'bg-forest border-forest/10';
+      return 'bg-forest border-forest/10 dark:border-forest/30';
     }
     if (item.status === 'purchased') {
-      return 'bg-white border-gray-100 opacity-60';
+      return 'bg-white dark:bg-dark-card border-gray-100 dark:border-gray-800 opacity-60';
     }
-    return 'bg-white border-gray-100';
+    return 'bg-white dark:bg-dark-card border-gray-100 dark:border-gray-800';
   }
 
-  // Simple background for category icon (no dark mode)
   iconBgClass(item: Item): string {
     if (item.status === 'in_cart') return 'bg-white/15';
-    // Return a light background based on category (just for visual variety)
     const lightBgMap: Record<string, string> = {
-      fruits: 'bg-green-100',
-      vegetables: 'bg-emerald-100',
-      dairy: 'bg-blue-100',
-      meat: 'bg-red-100',
-      bakery: 'bg-amber-100',
-      beverages: 'bg-cyan-100',
-      cleaning: 'bg-purple-100',
-      other: 'bg-gray-100',
+      fruits: 'bg-green-100 dark:bg-green-900/40',
+      vegetables: 'bg-emerald-100 dark:bg-emerald-900/40',
+      dairy: 'bg-blue-100 dark:bg-blue-900/40',
+      meat: 'bg-red-100 dark:bg-red-900/40',
+      bakery: 'bg-amber-100 dark:bg-amber-900/40',
+      beverages: 'bg-cyan-100 dark:bg-cyan-900/40',
+      cleaning: 'bg-purple-100 dark:bg-purple-900/40',
+      other: 'bg-gray-100 dark:bg-gray-700',
     };
-    return lightBgMap[item.category] || 'bg-gray-100';
+    return lightBgMap[item.category] || 'bg-gray-100 dark:bg-gray-800';
   }
 
   catEmoji(item: Item): string {
@@ -146,9 +148,9 @@ export class ItemListComponent {
 
   statusPillClass(item: Item): string {
     switch (item.status) {
-      case 'pending':   return 'bg-amber-100 text-amber-700';
-      case 'in_cart':   return 'bg-forest text-white';
-      case 'purchased': return 'bg-gray-200 text-gray-500';
+      case 'pending':   return 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300';
+      case 'in_cart':   return 'bg-forest text-white dark:bg-forest/80';
+      case 'purchased': return 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400';
       default:          return 'bg-gray-100 text-gray-600';
     }
   }
