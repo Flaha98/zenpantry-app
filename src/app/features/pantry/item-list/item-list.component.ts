@@ -102,7 +102,12 @@ import { Item, CATEGORY_CONFIG, STATUS_CONFIG } from '../../../core/models/item.
           </div>
         </div>
 
-        <!-- La barra de estado "in-cart" se añadirá en el commit 4 -->
+        <!-- In-cart status bar at bottom -->
+        @if (item.status === 'in_cart') {
+          <div class="h-0.5 bg-sage/30">
+            <div class="h-full bg-sage w-2/3 rounded-full"></div>
+          </div>
+        }
       </div>
     }
   `,

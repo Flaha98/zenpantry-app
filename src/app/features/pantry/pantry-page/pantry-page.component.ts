@@ -26,7 +26,7 @@ import { ItemFormComponent, ItemFormPayload } from '../item-form/item-form.compo
         />
       </div>
 
-      <!-- Stats strip (total y pending) -->
+      <!-- Stats strip -->
       <div class="px-4 py-3 flex items-center gap-2 text-sm overflow-x-auto scrollbar-hide">
         <span class="font-semibold text-charcoal dark:text-white">
           {{ dataService.stats().total }}
@@ -37,6 +37,12 @@ import { ItemFormComponent, ItemFormPayload } from '../item-form/item-form.compo
           <span class="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full flex-shrink-0"></span>
           <span class="font-medium text-amber-600 dark:text-amber-400">
             {{ dataService.stats().pending }} {{ 'stats.pending' | translate }}
+          </span>
+        }
+        @if (dataService.stats().inCart > 0) {
+          <span class="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full flex-shrink-0"></span>
+          <span class="font-medium text-sage">
+            {{ dataService.stats().inCart }} {{ 'stats.in_cart' | translate }}
           </span>
         }
       </div>
@@ -51,7 +57,7 @@ import { ItemFormComponent, ItemFormPayload } from '../item-form/item-form.compo
         />
       </div>
 
-      <!-- FAB con microinteracción -->
+      <!-- FAB -->
       <button
         class="fixed bottom-6 right-5 w-14 h-14 rounded-full
                bg-orange-500 hover:bg-orange-600 active:scale-90
@@ -81,8 +87,11 @@ export class PantryPageComponent {
   readonly dataService = inject(DataService);
   private readonly toast = inject(ToastService);
 
+  // ── Filter state ──────────────────────────────────────────────────────────
+  // Signal that holds current filter — any change triggers filteredItems recompute
   readonly filters = signal<FilterState>({ category: 'all', status: 'all' });
 
+  // Derived list: recomputed whenever items OR filters change
   readonly filteredItems = computed<Item[]>(() => {
     const { category, status } = this.filters();
     return this.dataService.items().filter(item => {
@@ -92,6 +101,7 @@ export class PantryPageComponent {
     });
   });
 
+  // ── Form state ────────────────────────────────────────────────────────────
   readonly showForm    = signal(false);
   readonly editingItem = signal<Item | null>(null);
 
@@ -104,6 +114,8 @@ export class PantryPageComponent {
     this.showForm.set(false);
     this.editingItem.set(null);
   }
+
+  // ── CRUD handlers ─────────────────────────────────────────────────────────
 
   onSave(payload: ItemFormPayload): void {
     const editing = this.editingItem();
