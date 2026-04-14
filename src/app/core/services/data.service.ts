@@ -1,40 +1,11 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { Item, ItemUnit, ItemCategory, ItemStatus, STATUS_CYCLE } from '../models/item.model';
 
-/**
- * DataService manages the items list using Angular Signals.
- */
 @Injectable({ providedIn: 'root' })
 export class DataService {
-  private readonly _items = signal<Item[]>([
-    {
-      id: '1',
-      name: 'Apples',
-      quantity: 6,
-      unit: 'unit' as ItemUnit,
-      category: 'fruits' as ItemCategory,
-      status: 'pending' as ItemStatus,
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: '2',
-      name: 'Whole Milk',
-      quantity: 2,
-      unit: 'l' as ItemUnit,
-      category: 'dairy' as ItemCategory,
-      status: 'pending' as ItemStatus,
-      createdAt: new Date().toISOString(),
-    },
-    {
-      id: '3',
-      name: 'Sourdough',
-      quantity: 1,
-      unit: 'pack' as ItemUnit,
-      category: 'bakery' as ItemCategory,
-      status: 'in_cart' as ItemStatus,
-      createdAt: new Date().toISOString(),
-    },
-  ]);
+  private readonly STORAGE_KEY = 'zenpantry_items';
+
+  private readonly _items = signal<Item[]>(this.loadFromStorage());
 
   readonly items = this._items.asReadonly();
 
@@ -75,6 +46,39 @@ export class DataService {
   }
 
   private mutate(fn: (current: Item[]) => Item[]): void {
-    this._items.set(fn(this._items()));
+    const updated = fn(this._items());
+    this._items.set(updated);
+    this.persist(updated);
+  }
+
+  private persist(items: Item[]): void {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(items));
+    } catch {
+      // Silently fail if localStorage is unavailable
+    }
+  }
+
+  private loadFromStorage(): Item[] {
+    try {
+      const raw = localStorage.getItem(this.STORAGE_KEY);
+      if (raw) return JSON.parse(raw) as Item[];
+    } catch {
+      // Corrupted data → start fresh with sample items
+    }
+    return this.getSampleItems();
+  }
+
+  private getSampleItems(): Item[] {
+    const now = new Date().toISOString();
+    return [
+      { id: '1', name: 'Apples',       quantity: 6, unit: 'unit' as ItemUnit, category: 'fruits'     as ItemCategory, status: 'pending'   as ItemStatus, createdAt: now },
+      { id: '2', name: 'Whole Milk',   quantity: 2, unit: 'l'    as ItemUnit, category: 'dairy'      as ItemCategory, status: 'pending'   as ItemStatus, createdAt: now },
+      { id: '3', name: 'Sourdough',    quantity: 1, unit: 'pack' as ItemUnit, category: 'bakery'     as ItemCategory, status: 'in_cart'   as ItemStatus, createdAt: now },
+      { id: '4', name: 'Chicken',      quantity: 1, unit: 'kg'   as ItemUnit, category: 'meat'       as ItemCategory, status: 'pending'   as ItemStatus, createdAt: now },
+      { id: '5', name: 'Spinach',      quantity: 2, unit: 'bag'  as ItemUnit, category: 'vegetables' as ItemCategory, status: 'in_cart'   as ItemStatus, createdAt: now },
+      { id: '6', name: 'Orange Juice', quantity: 1, unit: 'l'    as ItemUnit, category: 'beverages'  as ItemCategory, status: 'pending'   as ItemStatus, createdAt: now },
+      { id: '7', name: 'Yoghurt',      quantity: 4, unit: 'unit' as ItemUnit, category: 'dairy'      as ItemCategory, status: 'purchased' as ItemStatus, createdAt: now },
+    ];
   }
 }
