@@ -6,6 +6,8 @@ import { Item, ItemUnit, ItemCategory, ItemStatus, STATUS_CYCLE } from '../model
  */
 @Injectable({ providedIn: 'root' })
 export class DataService {
+  private readonly STORAGE_KEY = 'zenpantry_items';
+
   private readonly _items = signal<Item[]>([
     {
       id: '1',
@@ -75,6 +77,16 @@ export class DataService {
   }
 
   private mutate(fn: (current: Item[]) => Item[]): void {
-    this._items.set(fn(this._items()));
+    const updated = fn(this._items());
+    this._items.set(updated);
+    this.persist(updated);
+  }
+
+  private persist(items: Item[]): void {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(items));
+    } catch {
+      // Silently fail if localStorage is unavailable
+    }
   }
 }
