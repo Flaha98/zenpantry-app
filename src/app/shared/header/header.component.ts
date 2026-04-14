@@ -10,17 +10,19 @@ import { LanguageSwitcherComponent } from '../components/language-switcher/langu
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <header class="fixed top-0 inset-x-0 z-40 h-16 flex items-center px-4 gap-3
-                   bg-white dark:bg-dark-bg border-b border-gray-200 dark:border-gray-800">
+                   bg-cream/90 dark:bg-dark-bg/90 backdrop-blur-md
+                   border-b border-gray-100 dark:border-gray-800/60">
+
       <div class="flex items-center gap-2 flex-1 min-w-0">
         <div class="w-8 h-8 rounded-xl bg-forest flex items-center justify-center flex-shrink-0">
           <span class="text-base leading-none">🌿</span>
         </div>
-        <span class="font-bold text-lg text-gray-900 dark:text-white tracking-tight truncate">
+        <span class="font-bold text-lg text-charcoal dark:text-white tracking-tight truncate">
           {{ 'app.title' | translate }}
         </span>
       </div>
 
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 flex-shrink-0">
         <app-language-switcher />
 
         <button

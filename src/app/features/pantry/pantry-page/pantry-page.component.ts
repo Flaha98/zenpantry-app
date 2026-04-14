@@ -5,18 +5,20 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { DataService } from '../../../core/services/data.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Item, ItemCategory, ItemStatus } from '../../../core/models/item.model';
+import { FilterBarComponent, FilterState } from '../filter-bar/filter-bar.component';
 import { ItemListComponent } from '../item-list/item-list.component';
 import { ItemFormComponent, ItemFormPayload } from '../item-form/item-form.component';
-import { FilterBarComponent, FilterState } from '../filter-bar/filter-bar.component';
 
 @Component({
   selector: 'app-pantry-page',
   standalone: true,
-  imports: [ItemListComponent, ItemFormComponent, FilterBarComponent,TranslatePipe],
+  imports: [TranslatePipe, FilterBarComponent, ItemListComponent, ItemFormComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-gray-50 dark:bg-dark-bg">
-      <div class="sticky top-16 z-30 bg-gray-50/95 dark:bg-dark-bg/95 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800/60 px-4 py-3">
+    <div class="min-h-screen bg-cream dark:bg-dark-bg">
+
+      <div class="sticky top-16 z-30 bg-cream/95 dark:bg-dark-bg/95 backdrop-blur-sm
+                  border-b border-gray-100 dark:border-gray-800/60 px-4 py-3">
         <app-filter-bar
           [filters]="filters()"
           (filtersChange)="filters.set($event)"
@@ -44,7 +46,7 @@ import { FilterBarComponent, FilterState } from '../filter-bar/filter-bar.compon
       </div>
 
       <button
-        class="fixed bottom-6 right-5 w-14 h-14 rounded-full bg-orange-500 hover:bg-orange-600 active:scale-90 text-white shadow-lg shadow-orange-500/40 flex items-center justify-center transition-all duration-200 z-40"
+        class="fixed bottom-6 right-5 w-14 h-14 rounded-full bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/40 flex items-center justify-center z-40"
         (click)="openForm(null)"
         [attr.aria-label]="'item.add' | translate"
       >
@@ -66,7 +68,9 @@ import { FilterBarComponent, FilterState } from '../filter-bar/filter-bar.compon
 export class PantryPageComponent {
   readonly dataService = inject(DataService);
   private readonly toast = inject(ToastService);
+
   readonly filters = signal<FilterState>({ category: 'all', status: 'all' });
+
   readonly filteredItems = computed<Item[]>(() => {
     const { category, status } = this.filters();
     return this.dataService.items().filter(item => {
@@ -75,6 +79,7 @@ export class PantryPageComponent {
       return true;
     });
   });
+
   readonly showForm    = signal(false);
   readonly editingItem = signal<Item | null>(null);
 
@@ -82,10 +87,12 @@ export class PantryPageComponent {
     this.editingItem.set(item);
     this.showForm.set(true);
   }
+
   closeForm(): void {
     this.showForm.set(false);
     this.editingItem.set(null);
   }
+
   onSave(payload: ItemFormPayload): void {
     const editing = this.editingItem();
     if (editing) {
@@ -97,10 +104,12 @@ export class PantryPageComponent {
     }
     this.closeForm();
   }
+
   onDelete(id: string): void {
     this.dataService.deleteItem(id);
     this.toast.show('toast.deleted', 'info');
   }
+
   onStatusChange(id: string): void {
     this.dataService.cycleStatus(id);
   }

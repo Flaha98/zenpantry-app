@@ -103,7 +103,7 @@ export class ItemListComponent {
 
   cardClass(item: Item): string {
     if (item.status === 'in_cart') {
-      return 'bg-green-100 border-green-200 dark:bg-green-900/20 dark:border-green-800';
+      return 'bg-forest border-forest/10 dark:border-forest/30';
     }
     if (item.status === 'purchased') {
       return 'bg-white dark:bg-dark-card border-gray-100 dark:border-gray-800 opacity-60';
