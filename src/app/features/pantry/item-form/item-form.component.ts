@@ -23,23 +23,23 @@ export type ItemFormPayload = Omit<Item, 'id' | 'createdAt'>;
     >
       <!-- Sheet -->
       <div
-        class="w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl animate-slide-up sm:animate-pop-in overflow-hidden"
+        class="w-full sm:max-w-md bg-white dark:bg-dark-card rounded-t-3xl sm:rounded-3xl shadow-2xl animate-slide-up sm:animate-pop-in overflow-hidden"
         (click)="$event.stopPropagation()"
       >
         <!-- Handle (mobile only) -->
         <div class="flex justify-center pt-3 pb-1 sm:hidden">
-          <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
+          <div class="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
         </div>
 
         <!-- Header -->
         <div class="flex items-center justify-between px-6 pt-4 pb-2">
-          <h2 class="text-lg font-bold text-charcoal">
+          <h2 class="text-lg font-bold text-charcoal dark:text-white">
             {{ item ? 'Edit Item' : 'Add Item' }}
           </h2>
           <button
             class="w-8 h-8 rounded-full flex items-center justify-center
-                   bg-gray-100 text-gray-500
-                   hover:bg-gray-200 active:scale-90 transition-all"
+                   bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400
+                   hover:bg-gray-200 dark:hover:bg-gray-600 active:scale-90 transition-all"
             (click)="close.emit()"
             aria-label="Close"
           >✕</button>
@@ -50,15 +50,16 @@ export type ItemFormPayload = Omit<Item, 'id' | 'createdAt'>;
 
           <!-- Name -->
           <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">
               Name
             </label>
             <input
               formControlName="name"
               type="text"
               class="w-full px-4 py-3 rounded-xl border text-sm transition-colors
-                     bg-gray-50 border-gray-200 text-charcoal placeholder-gray-400
-                     focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/10"
+                     bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700
+                     text-charcoal dark:text-white placeholder-gray-400
+                     focus:outline-none focus:border-forest dark:focus:border-sage focus:ring-2 focus:ring-forest/10 dark:focus:ring-sage/10"
               placeholder="e.g., Apples"
               autocomplete="off"
             >
@@ -70,7 +71,7 @@ export type ItemFormPayload = Omit<Item, 'id' | 'createdAt'>;
           <!-- Quantity + Unit (side-by-side) -->
           <div class="flex gap-3">
             <div class="flex-1">
-              <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
+              <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">
                 Quantity
               </label>
               <input
@@ -79,20 +80,22 @@ export type ItemFormPayload = Omit<Item, 'id' | 'createdAt'>;
                 min="0.1"
                 step="any"
                 class="w-full px-4 py-3 rounded-xl border text-sm transition-colors
-                       bg-gray-50 border-gray-200 text-charcoal placeholder-gray-400
-                       focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/10"
+                       bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700
+                       text-charcoal dark:text-white placeholder-gray-400
+                       focus:outline-none focus:border-forest dark:focus:border-sage focus:ring-2 focus:ring-forest/10"
                 placeholder="Amount"
               >
             </div>
             <div class="w-28">
-              <label class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">
+              <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">
                 Unit
               </label>
               <select
                 formControlName="unit"
                 class="w-full px-3 py-3 rounded-xl border text-sm transition-colors
-                       bg-gray-50 border-gray-200 text-charcoal
-                       focus:outline-none focus:border-forest focus:ring-2 focus:ring-forest/10"
+                       bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700
+                       text-charcoal dark:text-white
+                       focus:outline-none focus:border-forest dark:focus:border-sage focus:ring-2 focus:ring-forest/10"
               >
                 @for (u of units; track u) {
                   <option [value]="u">{{ u }}</option>
@@ -103,7 +106,7 @@ export type ItemFormPayload = Omit<Item, 'id' | 'createdAt'>;
 
           <!-- Category -->
           <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
               Category
             </label>
             <div class="grid grid-cols-4 gap-2">
@@ -113,7 +116,7 @@ export type ItemFormPayload = Omit<Item, 'id' | 'createdAt'>;
                   class="flex flex-col items-center gap-1 py-2.5 rounded-xl border text-xs font-medium transition-all duration-150 active:scale-95"
                   [class]="form.get('category')?.value === cat
                     ? 'bg-forest border-forest text-white shadow-sm'
-                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-forest'"
+                    : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-forest dark:hover:border-sage'"
                   (click)="form.patchValue({ category: cat })"
                 >
                   <span class="text-xl leading-none">{{ catEmoji(cat) }}</span>
@@ -125,7 +128,7 @@ export type ItemFormPayload = Omit<Item, 'id' | 'createdAt'>;
 
           <!-- Status -->
           <div>
-            <label class="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
+            <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
               Status
             </label>
             <div class="flex gap-2">
@@ -135,7 +138,7 @@ export type ItemFormPayload = Omit<Item, 'id' | 'createdAt'>;
                   class="flex-1 py-2.5 rounded-xl border text-xs font-semibold transition-all duration-150 active:scale-95"
                   [class]="form.get('status')?.value === s.value
                     ? 'bg-forest border-forest text-white shadow-sm'
-                    : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-forest'"
+                    : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-forest dark:hover:border-sage'"
                   (click)="form.patchValue({ status: s.value })"
                 >{{ s.label }}</button>
               }
@@ -146,9 +149,9 @@ export type ItemFormPayload = Omit<Item, 'id' | 'createdAt'>;
           <div class="flex gap-3 pt-2">
             <button
               type="button"
-              class="flex-1 py-3 rounded-xl border border-gray-200
-                     text-sm font-semibold text-gray-600
-                     hover:bg-gray-50 active:scale-95 transition-all"
+              class="flex-1 py-3 rounded-xl border border-gray-200 dark:border-gray-700
+                     text-sm font-semibold text-gray-600 dark:text-gray-400
+                     hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-95 transition-all"
               (click)="close.emit()"
             >Cancel</button>
 
