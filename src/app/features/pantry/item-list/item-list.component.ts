@@ -10,8 +10,9 @@ import { Item, CATEGORY_CONFIG, STATUS_CONFIG } from '../../../core/models/item.
   imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+    <!-- Empty state -->
     @if (items.length === 0) {
-      <div class="flex flex-col items-center justify-center py-20 gap-4">
+      <div class="flex flex-col items-center justify-center py-20 gap-4 animate-fade-in">
         <div class="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-5xl">
           🛒
         </div>
@@ -26,15 +27,17 @@ import { Item, CATEGORY_CONFIG, STATUS_CONFIG } from '../../../core/models/item.
       </div>
     }
 
+    <!-- Item cards -->
     @for (item of items; track item.id) {
       <div
-        class="rounded-2xl shadow-sm border overflow-hidden"
+        class="rounded-2xl shadow-sm border transition-all duration-300 overflow-hidden animate-fade-in"
         [class]="cardClass(item)"
       >
         <div class="flex items-center gap-3 p-4">
 
+          <!-- Category icon -->
           <button
-            class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
+            class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 transition-transform duration-150 active:scale-90"
             [class]="iconBg(item)"
             (click)="statusChange.emit(item.id)"
             [attr.aria-label]="'Cycle status for ' + item.name"
@@ -42,9 +45,10 @@ import { Item, CATEGORY_CONFIG, STATUS_CONFIG } from '../../../core/models/item.
             {{ catEmoji(item) }}
           </button>
 
+          <!-- Item info -->
           <div class="flex-1 min-w-0">
             <p
-              class="font-semibold text-base leading-tight"
+              class="font-semibold text-base leading-tight transition-all duration-300"
               [class]="item.status === 'purchased' ? 'line-through opacity-50' : 'text-charcoal dark:text-white'"
             >{{ item.name }}</p>
             <div class="flex items-center gap-2 mt-0.5 flex-wrap">
@@ -58,16 +62,20 @@ import { Item, CATEGORY_CONFIG, STATUS_CONFIG } from '../../../core/models/item.
             </div>
           </div>
 
+          <!-- Status badge + actions -->
           <div class="flex items-center gap-1.5 flex-shrink-0">
+            <!-- Status pill -->
             <span
               class="hidden sm:inline-flex px-2 py-0.5 rounded-full text-xs font-semibold"
               [class]="statusPill(item)"
             >{{ statusLabel(item) | translate }}</span>
 
+            <!-- Edit -->
             <button
-              class="w-8 h-8 rounded-lg flex items-center justify-center
+              class="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-150
                      text-gray-400 dark:text-gray-500
-                     hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200"
+                     hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200
+                     active:scale-90"
               (click)="edit.emit(item)"
               aria-label="Edit"
             >
@@ -77,10 +85,12 @@ import { Item, CATEGORY_CONFIG, STATUS_CONFIG } from '../../../core/models/item.
               </svg>
             </button>
 
+            <!-- Delete -->
             <button
-              class="w-8 h-8 rounded-lg flex items-center justify-center
+              class="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-150
                      text-gray-400 dark:text-gray-500
-                     hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 dark:hover:text-red-400"
+                     hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 dark:hover:text-red-400
+                     active:scale-90"
               (click)="delete.emit(item.id)"
               aria-label="Delete"
             >
@@ -91,6 +101,8 @@ import { Item, CATEGORY_CONFIG, STATUS_CONFIG } from '../../../core/models/item.
             </button>
           </div>
         </div>
+
+        <!-- La barra de estado "in-cart" se añadirá en el commit 4 -->
       </div>
     }
   `,

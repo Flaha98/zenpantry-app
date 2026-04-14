@@ -17,6 +17,7 @@ import { ItemFormComponent, ItemFormPayload } from '../item-form/item-form.compo
   template: `
     <div class="min-h-screen bg-cream dark:bg-dark-bg">
 
+      <!-- Sticky filter bar -->
       <div class="sticky top-16 z-30 bg-cream/95 dark:bg-dark-bg/95 backdrop-blur-sm
                   border-b border-gray-100 dark:border-gray-800/60 px-4 py-3">
         <app-filter-bar
@@ -25,9 +26,13 @@ import { ItemFormComponent, ItemFormPayload } from '../item-form/item-form.compo
         />
       </div>
 
-      <div class="px-4 py-3 flex items-center gap-2 text-sm overflow-x-auto">
-        <span class="font-semibold text-gray-800 dark:text-white">{{ dataService.stats().total }}</span>
+      <!-- Stats strip (total y pending) -->
+      <div class="px-4 py-3 flex items-center gap-2 text-sm overflow-x-auto scrollbar-hide">
+        <span class="font-semibold text-charcoal dark:text-white">
+          {{ dataService.stats().total }}
+        </span>
         <span class="text-gray-400 dark:text-gray-500">{{ 'stats.items' | translate }}</span>
+
         @if (dataService.stats().pending > 0) {
           <span class="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full flex-shrink-0"></span>
           <span class="font-medium text-amber-600 dark:text-amber-400">
@@ -36,6 +41,7 @@ import { ItemFormComponent, ItemFormPayload } from '../item-form/item-form.compo
         }
       </div>
 
+      <!-- Item list -->
       <div class="px-4 pb-28 space-y-3">
         <app-item-list
           [items]="filteredItems()"
@@ -45,8 +51,13 @@ import { ItemFormComponent, ItemFormPayload } from '../item-form/item-form.compo
         />
       </div>
 
+      <!-- FAB con microinteracción -->
       <button
-        class="fixed bottom-6 right-5 w-14 h-14 rounded-full bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/40 flex items-center justify-center z-40"
+        class="fixed bottom-6 right-5 w-14 h-14 rounded-full
+               bg-orange-500 hover:bg-orange-600 active:scale-90
+               text-white shadow-lg shadow-orange-500/40
+               flex items-center justify-center
+               transition-all duration-200 z-40"
         (click)="openForm(null)"
         [attr.aria-label]="'item.add' | translate"
       >
@@ -55,6 +66,7 @@ import { ItemFormComponent, ItemFormPayload } from '../item-form/item-form.compo
         </svg>
       </button>
 
+      <!-- Form modal / bottom sheet -->
       @if (showForm()) {
         <app-item-form
           [item]="editingItem()"
