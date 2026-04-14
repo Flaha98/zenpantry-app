@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy, Component, computed, inject, signal,
 } from '@angular/core';
 import { DataService } from '../../../core/services/data.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { Item, ItemCategory, ItemStatus } from '../../../core/models/item.model';
 import { ItemListComponent } from '../item-list/item-list.component';
 import { ItemFormComponent, ItemFormPayload } from '../item-form/item-form.component';
@@ -76,6 +77,7 @@ import { FilterBarComponent, FilterState } from '../filter-bar/filter-bar.compon
 })
 export class PantryPageComponent {
   readonly dataService = inject(DataService);
+  private readonly toast = inject(ToastService);
 
   // Filter state
   readonly filters = signal<FilterState>({ category: 'all', status: 'all' });
@@ -108,14 +110,17 @@ export class PantryPageComponent {
     const editing = this.editingItem();
     if (editing) {
       this.dataService.updateItem(editing.id, payload);
+      this.toast.show('Item updated');
     } else {
       this.dataService.addItem(payload);
+      this.toast.show('Item added');
     }
     this.closeForm();
   }
 
   onDelete(id: string): void {
     this.dataService.deleteItem(id);
+    this.toast.show('Item deleted', 'info');
   }
 
   onStatusChange(id: string): void {
