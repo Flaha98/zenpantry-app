@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [],
+  imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <header class="fixed top-0 inset-x-0 z-40 h-16 flex items-center px-4 gap-3
@@ -13,7 +14,9 @@ import { ThemeService } from '../../core/services/theme.service';
         <div class="w-8 h-8 rounded-xl bg-forest flex items-center justify-center flex-shrink-0">
           <span class="text-base leading-none">🌿</span>
         </div>
-        <span class="font-bold text-lg text-gray-900 dark:text-white tracking-tight truncate">ZenPantry</span>
+        <span class="font-bold text-lg text-gray-900 dark:text-white tracking-tight truncate">
+          {{ 'app.title' | translate }}
+        </span>
       </div>
 
       <button
@@ -21,7 +24,7 @@ import { ThemeService } from '../../core/services/theme.service';
                bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300
                hover:bg-gray-200 dark:hover:bg-gray-600 active:scale-90 transition-all duration-200"
         (click)="theme.toggle()"
-        [attr.aria-label]="theme.isDark() ? 'Switch to light mode' : 'Switch to dark mode'"
+        [attr.aria-label]="theme.isDark() ? ('header.theme.light' | translate) : ('header.theme.dark' | translate)"
       >
         @if (theme.isDark()) {
           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
