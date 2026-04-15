@@ -55,5 +55,13 @@
   "empty.title": "Your pantry is empty",
   "empty.subtitle": "Tap + to add your first item",
 
-  "validation.name_required": "Name is required"
+  "validation.name_required": "Name is required",
+
+  "home.title": "Your Pantry",
+  "home.notifications": "Notifications",
+  "home.progress": "Shopping progress",
+  "home.of": "of",
+  "home.purchased": "purchased",
+  "home.categories": "Categories",
+  "home.clear_filter": "Clear"
 }
