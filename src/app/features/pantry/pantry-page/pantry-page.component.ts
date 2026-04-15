@@ -4,7 +4,7 @@ import {
 import { TranslatePipe } from '@ngx-translate/core';
 import { DataService } from '../../../core/services/data.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { Item, ItemCategory, ItemStatus } from '../../../core/models/item.model';
+import { Item } from '../../../core/models/item.model';
 import { FilterBarComponent, FilterState } from '../filter-bar/filter-bar.component';
 import { ItemListComponent } from '../item-list/item-list.component';
 import { ItemFormComponent, ItemFormPayload } from '../item-form/item-form.component';
@@ -17,7 +17,6 @@ import { ItemFormComponent, ItemFormPayload } from '../item-form/item-form.compo
   template: `
     <div class="min-h-screen bg-cream dark:bg-dark-bg">
 
-      <!-- Sticky filter bar -->
       <div class="sticky top-16 z-30 bg-cream/95 dark:bg-dark-bg/95 backdrop-blur-sm
                   border-b border-gray-100 dark:border-gray-800/60 px-4 py-3">
         <app-filter-bar
@@ -26,28 +25,26 @@ import { ItemFormComponent, ItemFormPayload } from '../item-form/item-form.compo
         />
       </div>
 
-      <!-- Stats strip -->
       <div class="px-4 py-3 flex items-center gap-2 text-sm overflow-x-auto scrollbar-hide">
         <span class="font-semibold text-charcoal dark:text-white">
-          {{ dataService.stats().total }}
+          {{ stats().total }}
         </span>
         <span class="text-gray-400 dark:text-gray-500">{{ 'stats.items' | translate }}</span>
 
-        @if (dataService.stats().pending > 0) {
+        @if (stats().pending > 0) {
           <span class="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full flex-shrink-0"></span>
           <span class="font-medium text-amber-600 dark:text-amber-400">
-            {{ dataService.stats().pending }} {{ 'stats.pending' | translate }}
+            {{ stats().pending }} {{ 'stats.pending' | translate }}
           </span>
         }
-        @if (dataService.stats().inCart > 0) {
+        @if (stats().inCart > 0) {
           <span class="w-1 h-1 bg-gray-300 dark:bg-gray-600 rounded-full flex-shrink-0"></span>
           <span class="font-medium text-sage">
-            {{ dataService.stats().inCart }} {{ 'stats.in_cart' | translate }}
+            {{ stats().inCart }} {{ 'stats.in_cart' | translate }}
           </span>
         }
       </div>
 
-      <!-- Item list -->
       <div class="px-4 pb-28 space-y-3">
         <app-item-list
           [items]="filteredItems()"
@@ -57,7 +54,6 @@ import { ItemFormComponent, ItemFormPayload } from '../item-form/item-form.compo
         />
       </div>
 
-      <!-- FAB -->
       <button
         class="fixed bottom-6 right-5 w-14 h-14 rounded-full
                bg-orange-500 hover:bg-orange-600 active:scale-90
@@ -72,7 +68,6 @@ import { ItemFormComponent, ItemFormPayload } from '../item-form/item-form.compo
         </svg>
       </button>
 
-      <!-- Form modal / bottom sheet -->
       @if (showForm()) {
         <app-item-form
           [item]="editingItem()"
@@ -84,24 +79,22 @@ import { ItemFormComponent, ItemFormPayload } from '../item-form/item-form.compo
   `,
 })
 export class PantryPageComponent {
-  readonly dataService = inject(DataService);
+  private readonly _data = inject(DataService);
   private readonly toast = inject(ToastService);
 
-  // ── Filter state ──────────────────────────────────────────────────────────
-  // Signal that holds current filter — any change triggers filteredItems recompute
+  readonly stats = this._data.stats;
+
   readonly filters = signal<FilterState>({ category: 'all', status: 'all' });
 
-  // Derived list: recomputed whenever items OR filters change
   readonly filteredItems = computed<Item[]>(() => {
     const { category, status } = this.filters();
-    return this.dataService.items().filter(item => {
-      if (category !== 'all' && item.category !== (category as ItemCategory)) return false;
-      if (status  !== 'all' && item.status   !== (status  as ItemStatus))   return false;
-      return true;
+    return this._data.items().filter(item => {
+      const matchesCategory = category === 'all' || item.category === category;
+      const matchesStatus   = status   === 'all' || item.status   === status;
+      return matchesCategory && matchesStatus;
     });
   });
 
-  // ── Form state ────────────────────────────────────────────────────────────
   readonly showForm    = signal(false);
   readonly editingItem = signal<Item | null>(null);
 
@@ -115,26 +108,24 @@ export class PantryPageComponent {
     this.editingItem.set(null);
   }
 
-  // ── CRUD handlers ─────────────────────────────────────────────────────────
-
   onSave(payload: ItemFormPayload): void {
     const editing = this.editingItem();
     if (editing) {
-      this.dataService.updateItem(editing.id, payload);
+      this._data.updateItem(editing.id, payload);
       this.toast.show('toast.updated');
     } else {
-      this.dataService.addItem(payload);
+      this._data.addItem(payload);
       this.toast.show('toast.added');
     }
     this.closeForm();
   }
 
   onDelete(id: string): void {
-    this.dataService.deleteItem(id);
+    this._data.deleteItem(id);
     this.toast.show('toast.deleted', 'info');
   }
 
   onStatusChange(id: string): void {
-    this.dataService.cycleStatus(id);
+    this._data.cycleStatus(id);
   }
 }
