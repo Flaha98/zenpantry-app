@@ -185,7 +185,9 @@ export class ItemFormComponent {
   });
 
   constructor() {
-    // Replaces ngOnInit + ngOnChanges: reacts whenever the item input changes
+    // effect() replaces the ngOnInit + ngOnChanges combination: it re-runs
+    // automatically whenever the item() signal changes, patching the form
+    // with the incoming item's values without manually subscribing to inputs.
     effect(() => {
       const currentItem = this.item();
       if (currentItem) {

@@ -54,6 +54,12 @@ export interface FilterState {
     </div>
   `,
 })
+/**
+ * Stateless filter bar — owns no mutable state of its own.
+ * It receives the current FilterState as an input and emits a complete new
+ * FilterState object on every change, following unidirectional data flow.
+ * The parent is responsible for storing and applying the filter.
+ */
 export class FilterBarComponent {
   readonly filters       = input<FilterState>({ category: 'all', status: 'all' });
   readonly filtersChange = output<FilterState>();
