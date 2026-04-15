@@ -8,21 +8,24 @@ export interface Toast {
   type: ToastType;
 }
 
-/**
- * ToastService manages ephemeral notifications using a Signal-backed queue.
- * Each toast auto-dismisses after 3 seconds.
- */
 @Injectable({ providedIn: 'root' })
 export class ToastService {
   readonly toasts = signal<Toast[]>([]);
+  private readonly timers = new Map<string, ReturnType<typeof setTimeout>>();
 
   show(message: string, type: ToastType = 'success'): void {
     const toast: Toast = { id: crypto.randomUUID(), message, type };
     this.toasts.update(list => [...list, toast]);
-    setTimeout(() => this.dismiss(toast.id), 3000);
+    const timer = setTimeout(() => this.dismiss(toast.id), 3000);
+    this.timers.set(toast.id, timer);
   }
 
   dismiss(id: string): void {
+    const timer = this.timers.get(id);
+    if (timer !== undefined) {
+      clearTimeout(timer);
+      this.timers.delete(id);
+    }
     this.toasts.update(list => list.filter(t => t.id !== id));
   }
 }
