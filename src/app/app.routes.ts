@@ -4,8 +4,8 @@ export const routes: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./features/pantry/pantry-page/pantry-page.component').then(
-        m => m.PantryPageComponent
+      import('./features/home/home-page/home-page.component').then(
+        m => m.HomePageComponent
       ),
   },
   { path: '**', redirectTo: '' },

@@ -55,5 +55,13 @@
   "empty.title": "A sua despensa está vazia",
   "empty.subtitle": "Toque em + para adicionar o primeiro item",
 
-  "validation.name_required": "O nome é obrigatório"
+  "validation.name_required": "O nome é obrigatório",
+
+  "home.title": "A sua Despensa",
+  "home.notifications": "Notificações",
+  "home.progress": "Progresso das compras",
+  "home.of": "de",
+  "home.purchased": "comprados",
+  "home.categories": "Categorias",
+  "home.clear_filter": "Limpar"
 }
