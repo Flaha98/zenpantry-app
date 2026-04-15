@@ -61,7 +61,7 @@ const SLIDES: HelpSlide[] = [
     <!-- Bottom sheet (slides up on mobile; centered modal on sm+) -->
     <div
       class="fixed bottom-0 inset-x-0 z-50 animate-slide-up
-             sm:bottom-6 sm:left-1/2 sm:-translate-x-1/2 sm:w-[400px]
+             sm:bottom-6 sm:left-[calc(50%-200px)] sm:right-auto sm:w-[400px]
              sm:rounded-3xl rounded-t-3xl
              bg-white dark:bg-dark-card shadow-2xl overflow-hidden"
       (click)="$event.stopPropagation()"
