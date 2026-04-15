@@ -38,27 +38,128 @@ interface CategoryStat {
             </h1>
           </div>
 
-          <!-- Bell with pending badge -->
-          <button
-            class="relative w-11 h-11 rounded-2xl flex items-center justify-center
-                   bg-white dark:bg-dark-card shadow-sm
-                   active:scale-90 transition-all duration-200"
-            [attr.aria-label]="'home.notifications' | translate"
-          >
-            <svg class="w-5 h-5 text-charcoal dark:text-white" fill="none" viewBox="0 0 24 24"
-                 stroke="currentColor" stroke-width="1.8">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-            @if (stats().pending > 0) {
-              <span
-                class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1
-                       bg-orange-500 rounded-full text-white text-[10px] font-bold
-                       flex items-center justify-center animate-pop-in">
-                {{ stats().pending > 9 ? '9+' : stats().pending }}
-              </span>
+          <!-- Bell button + notification panel -->
+          <div class="relative">
+
+            <button
+              class="relative w-11 h-11 rounded-2xl flex items-center justify-center
+                     bg-white dark:bg-dark-card shadow-sm
+                     active:scale-90 transition-all duration-200"
+              [attr.aria-label]="'home.notifications' | translate"
+              (click)="toggleNotifications()"
+            >
+              <svg class="w-5 h-5 text-charcoal dark:text-white" fill="none" viewBox="0 0 24 24"
+                   stroke="currentColor" stroke-width="1.8">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              @if (stats().pending > 0) {
+                <span
+                  class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1
+                         bg-orange-500 rounded-full text-white text-[10px] font-bold
+                         flex items-center justify-center animate-pop-in">
+                  {{ stats().pending > 9 ? '9+' : stats().pending }}
+                </span>
+              }
+            </button>
+
+            @if (showNotifications()) {
+              <!-- Backdrop: click fuera cierra el panel -->
+              <div
+                class="fixed inset-0 z-40"
+                (click)="closeNotifications()">
+              </div>
+
+              <!-- Notification panel -->
+              <div
+                class="absolute top-full mt-2 right-0 w-72 z-50
+                       bg-white dark:bg-dark-card rounded-2xl
+                       shadow-xl shadow-black/10 dark:shadow-black/40
+                       border border-gray-100 dark:border-gray-800/60
+                       animate-fade-in overflow-hidden">
+
+                <!-- Panel header -->
+                <div class="flex items-center justify-between px-4 py-3
+                            border-b border-gray-100 dark:border-gray-800/60">
+                  <span class="text-sm font-bold text-charcoal dark:text-white flex items-center gap-2">
+                    🔔 {{ 'stats.pending' | translate }}
+                    @if (pendingItems().length > 0) {
+                      <span class="min-w-[20px] h-5 px-1 bg-orange-500 rounded-full
+                                   text-white text-[10px] font-bold
+                                   flex items-center justify-center">
+                        {{ pendingItems().length }}
+                      </span>
+                    }
+                  </span>
+                  <button
+                    class="w-6 h-6 rounded-full flex items-center justify-center
+                           text-gray-400 hover:text-charcoal dark:hover:text-white
+                           hover:bg-gray-100 dark:hover:bg-gray-700
+                           active:scale-90 transition-all duration-150"
+                    (click)="closeNotifications()"
+                    aria-label="Close">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                         stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Empty state -->
+                @if (pendingItems().length === 0) {
+                  <div class="py-8 flex flex-col items-center gap-2">
+                    <span class="text-3xl">🎉</span>
+                    <p class="text-sm text-gray-400 dark:text-gray-500">
+                      {{ 'home.notif.empty' | translate }}
+                    </p>
+                  </div>
+
+                } @else {
+                  <!-- Pending items list -->
+                  <div class="max-h-52 overflow-y-auto">
+                    @for (item of pendingItems(); track item.id) {
+                      <button
+                        class="w-full flex items-center gap-3 px-4 py-3 text-left
+                               hover:bg-gray-50 dark:hover:bg-gray-700/50
+                               active:bg-gray-100 dark:active:bg-gray-700
+                               transition-colors duration-150"
+                        (click)="moveToCart(item.id)">
+                        <span class="text-xl leading-none flex-shrink-0">
+                          {{ categoryEmoji(item) }}
+                        </span>
+                        <div class="flex-1 min-w-0">
+                          <p class="text-sm font-medium text-charcoal dark:text-white truncate">
+                            {{ item.name }}
+                          </p>
+                          <p class="text-xs text-gray-400">
+                            {{ item.quantity }}&nbsp;{{ 'units.' + item.unit | translate }}
+                          </p>
+                        </div>
+                        <!-- Cart icon: tap to move to cart -->
+                        <svg class="w-4 h-4 text-sage flex-shrink-0" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                      </button>
+                    }
+                  </div>
+
+                  <!-- Mark all footer -->
+                  <div class="px-4 py-3 border-t border-gray-100 dark:border-gray-800/60">
+                    <button
+                      class="w-full py-2.5 rounded-xl bg-forest hover:bg-forest/90
+                             text-white text-sm font-semibold
+                             active:scale-95 transition-all duration-150
+                             shadow-sm shadow-forest/25"
+                      (click)="markAllInCart()">
+                      {{ 'home.notif.mark_all' | translate }}
+                    </button>
+                  </div>
+                }
+              </div>
             }
-          </button>
+          </div>
         </div>
 
         <!-- Progress card -->
@@ -249,7 +350,37 @@ export class HomePageComponent {
     }));
   });
 
-  // ── Filter ────────────────────────────────────────────────────────────────
+  // ── Notifications ─────────────────────────────────────────────────────────
+
+  readonly showNotifications = signal(false);
+
+  readonly pendingItems = computed<Item[]>(() =>
+    this.data.items().filter(i => i.status === 'pending')
+  );
+
+  toggleNotifications(): void {
+    this.showNotifications.update(v => !v);
+  }
+
+  closeNotifications(): void {
+    this.showNotifications.set(false);
+  }
+
+  moveToCart(id: string): void {
+    this.data.cycleStatus(id); // pending → in_cart
+  }
+
+  markAllInCart(): void {
+    this.pendingItems().forEach(item => this.data.cycleStatus(item.id));
+    this.closeNotifications();
+    this.toast.show('toast.all_in_cart');
+  }
+
+  categoryEmoji(item: Item): string {
+    return CATEGORY_CONFIG[item.category].emoji;
+  }
+
+  // ── Category filter ───────────────────────────────────────────────────────
 
   readonly selectedCategory = signal<ItemCategory | 'all'>('all');
 

@@ -63,5 +63,10 @@
   "home.of": "de",
   "home.purchased": "comprados",
   "home.categories": "Categorias",
-  "home.clear_filter": "Limpar"
+  "home.clear_filter": "Limpar",
+
+  "home.notif.empty": "Tudo feito, nada pendente!",
+  "home.notif.mark_all": "Mover tudo para o Carrinho",
+
+  "toast.all_in_cart": "Todos os itens movidos para o carrinho!"
 }
