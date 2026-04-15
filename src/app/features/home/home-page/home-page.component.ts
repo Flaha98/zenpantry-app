@@ -5,9 +5,11 @@ import { TitleCasePipe } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { DataService } from '../../../core/services/data.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { STORAGE_KEYS } from '../../../core/constants/storage-keys';
 import { Item, ItemCategory, CATEGORIES, CATEGORY_CONFIG } from '../../../core/models/item.model';
 import { ItemListComponent } from '../../pantry/item-list/item-list.component';
 import { ItemFormComponent, ItemFormPayload } from '../../pantry/item-form/item-form.component';
+import { HelpTourComponent } from '../../../shared/components/help-tour/help-tour.component';
 
 interface CategoryStat {
   key: ItemCategory;
@@ -19,7 +21,7 @@ interface CategoryStat {
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [TranslatePipe, TitleCasePipe, ItemListComponent, ItemFormComponent],
+  imports: [TranslatePipe, TitleCasePipe, ItemListComponent, ItemFormComponent, HelpTourComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="min-h-screen bg-cream dark:bg-dark-bg">
@@ -292,6 +294,23 @@ interface CategoryStat {
         />
       </section>
 
+      <!-- ── HELP BUTTON ───────────────────────────────────────────────── -->
+      <button
+        class="fixed bottom-6 left-5 w-11 h-11 rounded-full z-40
+               bg-white dark:bg-dark-card shadow-md
+               text-gray-400 dark:text-gray-500
+               hover:text-forest dark:hover:text-sage hover:shadow-lg
+               flex items-center justify-center
+               active:scale-90 transition-all duration-200"
+        (click)="openHelp()"
+        [attr.aria-label]="'help.open' | translate"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </button>
+
       <!-- ── FAB ───────────────────────────────────────────────────────── -->
       <button
         class="fixed bottom-6 right-5 w-14 h-14 rounded-full
@@ -316,6 +335,11 @@ interface CategoryStat {
           (save)="onSave($event)"
           (close)="closeForm()"
         />
+      }
+
+      <!-- ── HELP TOUR ─────────────────────────────────────────────────── -->
+      @if (showHelp()) {
+        <app-help-tour (close)="closeHelp()" />
       }
     </div>
   `,
@@ -452,5 +476,25 @@ export class HomePageComponent {
 
   onStatusChange(id: string): void {
     this.data.cycleStatus(id);
+  }
+
+  // ── Help tour ─────────────────────────────────────────────────────────────
+
+  readonly showHelp = signal(false);
+
+  constructor() {
+    // Auto-show on first visit, with a short delay so the UI renders first
+    if (!localStorage.getItem(STORAGE_KEYS.helpSeen)) {
+      setTimeout(() => this.showHelp.set(true), 700);
+    }
+  }
+
+  openHelp(): void {
+    this.showHelp.set(true);
+  }
+
+  closeHelp(): void {
+    localStorage.setItem(STORAGE_KEYS.helpSeen, '1');
+    this.showHelp.set(false);
   }
 }
