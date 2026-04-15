@@ -1,10 +1,10 @@
 import {
-  ChangeDetectionStrategy, Component, EventEmitter, inject, Input, OnInit, Output,
+  ChangeDetectionStrategy, Component, effect, inject, input, output,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TranslatePipe } from '@ngx-translate/core';
 import {
-  Item, ItemCategory, ItemStatus, ItemUnit, CATEGORIES, UNITS,
+  Item, ItemCategory, ItemStatus, ItemUnit, CATEGORIES, UNITS, CATEGORY_CONFIG,
 } from '../../../core/models/item.model';
 
 export type ItemFormPayload = Omit<Item, 'id' | 'createdAt'>;
@@ -15,42 +15,36 @@ export type ItemFormPayload = Omit<Item, 'id' | 'createdAt'>;
   imports: [ReactiveFormsModule, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <!-- Backdrop -->
     <div
       class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm"
       (click)="onBackdropClick($event)"
       role="dialog"
       aria-modal="true"
     >
-      <!-- Sheet -->
       <div
         class="w-full sm:max-w-md bg-white dark:bg-dark-card rounded-t-3xl sm:rounded-3xl
                shadow-2xl animate-slide-up sm:animate-pop-in overflow-hidden"
         (click)="$event.stopPropagation()"
       >
-        <!-- Handle (mobile only) -->
         <div class="flex justify-center pt-3 pb-1 sm:hidden">
           <div class="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
         </div>
 
-        <!-- Header -->
         <div class="flex items-center justify-between px-6 pt-4 pb-2">
           <h2 class="text-lg font-bold text-charcoal dark:text-white">
-            {{ (item ? 'item.edit' : 'item.add') | translate }}
+            {{ (item() ? 'item.edit' : 'item.add') | translate }}
           </h2>
           <button
             class="w-8 h-8 rounded-full flex items-center justify-center
                    bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400
                    hover:bg-gray-200 dark:hover:bg-gray-600 active:scale-90 transition-all"
             (click)="close.emit()"
-            aria-label="Close"
+            [attr.aria-label]="'item.cancel' | translate"
           >✕</button>
         </div>
 
-        <!-- Form -->
         <form [formGroup]="form" (ngSubmit)="submit()" class="px-6 pt-2 pb-8 space-y-4">
 
-          <!-- Name -->
           <div>
             <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">
               {{ 'item.name' | translate }}
@@ -66,11 +60,10 @@ export type ItemFormPayload = Omit<Item, 'id' | 'createdAt'>;
               autocomplete="off"
             >
             @if (form.get('name')?.invalid && form.get('name')?.touched) {
-              <p class="text-red-500 text-xs mt-1">Name is required</p>
+              <p class="text-red-500 text-xs mt-1">{{ 'validation.name_required' | translate }}</p>
             }
           </div>
 
-          <!-- Quantity + Unit (side-by-side) -->
           <div class="flex gap-3">
             <div class="flex-1">
               <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wide">
@@ -106,7 +99,6 @@ export type ItemFormPayload = Omit<Item, 'id' | 'createdAt'>;
             </div>
           </div>
 
-          <!-- Category -->
           <div>
             <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
               {{ 'item.category' | translate }}
@@ -128,7 +120,6 @@ export type ItemFormPayload = Omit<Item, 'id' | 'createdAt'>;
             </div>
           </div>
 
-          <!-- Status -->
           <div>
             <label class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 uppercase tracking-wide">
               {{ 'item.status' | translate }}
@@ -147,7 +138,6 @@ export type ItemFormPayload = Omit<Item, 'id' | 'createdAt'>;
             </div>
           </div>
 
-          <!-- Actions -->
           <div class="flex gap-3 pt-2">
             <button
               type="button"
@@ -170,15 +160,15 @@ export type ItemFormPayload = Omit<Item, 'id' | 'createdAt'>;
     </div>
   `,
 })
-export class ItemFormComponent implements OnInit {
-  @Input() item: Item | null = null;
-  @Output() save  = new EventEmitter<ItemFormPayload>();
-  @Output() close = new EventEmitter<void>();
+export class ItemFormComponent {
+  readonly item  = input<Item | null>(null);
+  readonly save  = output<ItemFormPayload>();
+  readonly close = output<void>();
 
   private readonly fb = inject(FormBuilder);
 
   readonly categories = CATEGORIES;
-  readonly units       = UNITS;
+  readonly units      = UNITS;
 
   readonly statusOptions: Array<{ value: ItemStatus; labelKey: string }> = [
     { value: 'pending',   labelKey: 'filters.pending'   },
@@ -186,33 +176,32 @@ export class ItemFormComponent implements OnInit {
     { value: 'purchased', labelKey: 'filters.purchased' },
   ];
 
-  form = this.fb.nonNullable.group({
-    name:     ['',        Validators.required],
-    quantity: [1,         [Validators.required, Validators.min(0.1)]],
-    unit:     ['unit' as ItemUnit],
-    category: ['fruits'   as ItemCategory],
-    status:   ['pending'  as ItemStatus],
+  readonly form = this.fb.nonNullable.group({
+    name:     ['',       Validators.required],
+    quantity: [1,        [Validators.required, Validators.min(0.1)]],
+    unit:     ['unit'    as ItemUnit],
+    category: ['fruits'  as ItemCategory],
+    status:   ['pending' as ItemStatus],
   });
 
-  private readonly emojiMap: Record<ItemCategory, string> = {
-    fruits: '🍎', vegetables: '🥦', dairy: '🥛', meat: '🥩',
-    bakery: '🍞', beverages: '🥤', cleaning: '🧹', other: '📦',
-  };
-
-  ngOnInit(): void {
-    if (this.item) {
-      this.form.patchValue({
-        name:     this.item.name,
-        quantity: this.item.quantity,
-        unit:     this.item.unit,
-        category: this.item.category,
-        status:   this.item.status,
-      });
-    }
+  constructor() {
+    // Replaces ngOnInit + ngOnChanges: reacts whenever the item input changes
+    effect(() => {
+      const currentItem = this.item();
+      if (currentItem) {
+        this.form.patchValue({
+          name:     currentItem.name,
+          quantity: currentItem.quantity,
+          unit:     currentItem.unit,
+          category: currentItem.category,
+          status:   currentItem.status,
+        });
+      }
+    });
   }
 
   catEmoji(cat: ItemCategory): string {
-    return this.emojiMap[cat];
+    return CATEGORY_CONFIG[cat].emoji;
   }
 
   submit(): void {

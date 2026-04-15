@@ -33,6 +33,7 @@
   "item.add": "Add Item",
   "item.edit": "Edit Item",
   "item.delete": "Delete",
+  "item.cycle_status": "Cycle status for {{name}}",
   "item.save": "Save",
   "item.cancel": "Cancel",
   "item.name": "Name",
@@ -52,5 +53,7 @@
   "stats.in_cart": "in cart",
 
   "empty.title": "Your pantry is empty",
-  "empty.subtitle": "Tap + to add your first item"
+  "empty.subtitle": "Tap + to add your first item",
+
+  "validation.name_required": "Name is required"
 }

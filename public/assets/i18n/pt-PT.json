@@ -33,6 +33,7 @@
   "item.add": "Adicionar Item",
   "item.edit": "Editar Item",
   "item.delete": "Eliminar",
+  "item.cycle_status": "Alterar estado de {{name}}",
   "item.save": "Guardar",
   "item.cancel": "Cancelar",
   "item.name": "Nome",
@@ -52,5 +53,7 @@
   "stats.in_cart": "no carrinho",
 
   "empty.title": "A sua despensa está vazia",
-  "empty.subtitle": "Toque em + para adicionar o primeiro item"
+  "empty.subtitle": "Toque em + para adicionar o primeiro item",
+
+  "validation.name_required": "O nome é obrigatório"
 }
