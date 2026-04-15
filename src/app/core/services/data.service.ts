@@ -4,6 +4,14 @@ import { STORAGE_KEYS } from '../constants/storage-keys';
 
 const VALID_STATUSES = new Set<ItemStatus>(['pending', 'in_cart', 'purchased']);
 
+/**
+ * Runtime type guard for items read from localStorage.
+ *
+ * Validation is intentionally applied only at the persistence boundary (on
+ * load), never on writes — internal mutations go through typed methods, so
+ * they cannot produce invalid data. This avoids redundant validation overhead
+ * on every add/update operation.
+ */
 function isValidItem(obj: unknown): obj is Item {
   if (!obj || typeof obj !== 'object') return false;
   const item = obj as Record<string, unknown>;
@@ -20,10 +28,13 @@ function isValidItem(obj: unknown): obj is Item {
 
 @Injectable({ providedIn: 'root' })
 export class DataService {
+  // Private writable signal; exposed as readonly to enforce mutation only
+  // through the service's typed methods (addItem, updateItem, etc.).
   private readonly _items = signal<Item[]>(this.loadFromStorage());
 
   readonly items = this._items.asReadonly();
 
+  /** Derived stats — recomputed automatically whenever _items changes. */
   readonly stats = computed(() => {
     const items = this._items();
     return {
@@ -40,7 +51,7 @@ export class DataService {
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
     };
-    this.mutate(items => [newItem, ...items]);
+    this.mutate(items => [newItem, ...items]); // prepend so newest items appear first
     return newItem;
   }
 
@@ -57,9 +68,17 @@ export class DataService {
   cycleStatus(id: string): void {
     const item = this._items().find(i => i.id === id);
     if (!item) return;
+    // STATUS_CYCLE encodes the allowed transitions; see item.model.ts
     this.updateItem(id, { status: STATUS_CYCLE[item.status] });
   }
 
+  /**
+   * Atomic helper: applies a pure transformation to the items array,
+   * updates the signal (triggering reactive consumers), and persists
+   * the result to localStorage — all in one call.
+   *
+   * Centralising this prevents any mutation from forgetting to persist.
+   */
   private mutate(fn: (current: Item[]) => Item[]): void {
     const updated = fn(this._items());
     this._items.set(updated);
@@ -69,16 +88,23 @@ export class DataService {
   private persist(items: Item[]): void {
     try {
       localStorage.setItem(STORAGE_KEYS.items, JSON.stringify(items));
-    } catch { /* localStorage unavailable (private mode) */ }
+    } catch { /* localStorage unavailable (private/incognito mode) */ }
   }
 
   private loadFromStorage(): Item[] {
     try {
       const raw = localStorage.getItem(STORAGE_KEYS.items);
-      // null → first visit: show samples. '[]' → user cleared all: show empty list.
+
+      // Distinguish two distinct states:
+      //   null  → key never written → first visit → show sample data
+      //   '[]'  → user explicitly cleared their list → respect that, show empty
       if (raw === null) return this.getSampleItems();
+
       const parsed: unknown = JSON.parse(raw);
       if (!Array.isArray(parsed)) return this.getSampleItems();
+
+      // Filter out any corrupted entries that may have been written by an
+      // older schema version, rather than throwing and losing valid items.
       return parsed.filter(isValidItem);
     } catch {
       return this.getSampleItems();

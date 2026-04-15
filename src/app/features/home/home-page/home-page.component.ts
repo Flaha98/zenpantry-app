@@ -350,6 +350,7 @@ export class HomePageComponent {
 
   // ── Data ──────────────────────────────────────────────────────────────────
 
+  // Expose the service's computed stats signal directly — no local copy needed.
   readonly stats = this.data.stats;
 
   readonly greeting = computed(() => {
@@ -378,6 +379,8 @@ export class HomePageComponent {
 
   readonly showNotifications = signal(false);
 
+  // Derived from the global items signal — updates reactively whenever an
+  // item's status changes, keeping the panel list in sync without extra state.
   readonly pendingItems = computed<Item[]>(() =>
     this.data.items().filter(i => i.status === 'pending')
   );
@@ -391,10 +394,13 @@ export class HomePageComponent {
   }
 
   moveToCart(id: string): void {
-    this.data.cycleStatus(id); // pending → in_cart
+    this.data.cycleStatus(id); // pending → in_cart (first step of STATUS_CYCLE)
   }
 
   markAllInCart(): void {
+    // Snapshot the pending list before cycling — cycleStatus mutates the signal,
+    // which would shorten the array mid-iteration if we iterated over the live
+    // computed. The forEach here iterates over the captured array, not the signal.
     this.pendingItems().forEach(item => this.data.cycleStatus(item.id));
     this.closeNotifications();
     this.toast.show('toast.all_in_cart');
@@ -424,6 +430,11 @@ export class HomePageComponent {
     return cat !== 'all' ? CATEGORY_CONFIG[cat].emoji : '';
   });
 
+  /**
+   * Tapping the already-active category deselects it (shows all items).
+   * This toggle behaviour avoids needing a separate "clear filter" tap for
+   * the common case of undoing the last selection.
+   */
   selectCategory(key: ItemCategory | 'all'): void {
     this.selectedCategory.set(this.selectedCategory() === key ? 'all' : key);
   }
@@ -483,7 +494,9 @@ export class HomePageComponent {
   readonly showHelp = signal(false);
 
   constructor() {
-    // Auto-show on first visit, with a short delay so the UI renders first
+    // Show the tour automatically on the first visit only.
+    // The 700 ms delay lets the home screen finish its entrance animations
+    // before the overlay appears, avoiding a jarring simultaneous render.
     if (!localStorage.getItem(STORAGE_KEYS.helpSeen)) {
       setTimeout(() => this.showHelp.set(true), 700);
     }
@@ -494,6 +507,8 @@ export class HomePageComponent {
   }
 
   closeHelp(): void {
+    // Persist the flag regardless of whether the user finished or skipped —
+    // we only want the auto-show to fire once, never on subsequent visits.
     localStorage.setItem(STORAGE_KEYS.helpSeen, '1');
     this.showHelp.set(false);
   }

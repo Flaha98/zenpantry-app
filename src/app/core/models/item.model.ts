@@ -21,7 +21,7 @@ export interface Item {
   unit: ItemUnit;
   category: ItemCategory;
   status: ItemStatus;
-  createdAt: string;
+  createdAt: string; // ISO 8601 — stored as a string for JSON serialisation compatibility
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -34,8 +34,12 @@ export const CATEGORIES: ItemCategory[] = [
 export const UNITS: ItemUnit[] = ['unit', 'kg', 'g', 'l', 'ml', 'pack', 'box', 'bag'];
 
 /**
- * Visual config for each category.
- * Full class strings are listed here so Tailwind JIT includes them at build time.
+ * Visual configuration keyed by category.
+ *
+ * ⚠️  Tailwind JIT scanning: all class strings MUST be written as complete
+ * literals here. The JIT compiler scans source files for full class names;
+ * dynamically constructed strings (e.g. `bg-${color}-100`) are invisible to
+ * it and will be purged from the production bundle.
  */
 export const CATEGORY_CONFIG: Record<ItemCategory, { iconBg: string; iconText: string; emoji: string }> = {
   fruits:     { iconBg: 'bg-green-100 dark:bg-green-900/40',   iconText: 'text-green-700 dark:text-green-300',   emoji: '🍎' },
@@ -54,7 +58,14 @@ export const STATUS_CONFIG: Record<ItemStatus, { label: string; pillClass: strin
   purchased: { label: 'filters.purchased', pillClass: 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400' },
 };
 
-/** Cycle: pending → in_cart → purchased → pending */
+/**
+ * Encodes the item status state machine as a lookup table.
+ * Allowed cycle: pending → in_cart → purchased → pending.
+ *
+ * Keeping transitions here (rather than scattered across components) means
+ * any component can advance an item's state without knowing what comes next —
+ * it just calls DataService.cycleStatus() and this table does the rest.
+ */
 export const STATUS_CYCLE: Record<ItemStatus, ItemStatus> = {
   pending:   'in_cart',
   in_cart:   'purchased',

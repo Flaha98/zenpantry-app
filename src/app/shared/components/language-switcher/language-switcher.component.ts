@@ -54,6 +54,10 @@ export class LanguageSwitcherComponent {
 
   readonly langs = SUPPORTED_LANGS;
 
+  // toSignal converts onLangChange (Observable) into a Signal, making it
+  // compatible with OnPush change detection without calling markForCheck().
+  // initialValue seeds the signal synchronously so the active language is
+  // known before the first emission, preventing an undefined/flash on load.
   readonly activeLang = toSignal(
     this.translate.onLangChange.pipe(map(e => e.lang)),
     { initialValue: this.translate.currentLang ?? 'en' },
@@ -64,6 +68,8 @@ export class LanguageSwitcherComponent {
   }
 
   use(lang: string): void {
+    // Guard prevents redundant translations and change-detection cycles when
+    // the user taps the already-active language button.
     if (this.activeLang() === lang) return;
     this.translate.use(lang);
     try { localStorage.setItem(STORAGE_KEYS.lang, lang); } catch { /* noop */ }

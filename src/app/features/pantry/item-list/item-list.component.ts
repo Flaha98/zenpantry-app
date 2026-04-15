@@ -109,6 +109,12 @@ export class ItemListComponent {
   readonly delete       = output<string>();
   readonly statusChange = output<string>();
 
+  /**
+   * The following methods return complete Tailwind class strings rather than
+   * building them dynamically. This is required for Tailwind JIT: the scanner
+   * reads source files looking for full class names, so any string that is
+   * assembled at runtime (e.g. `bg-${color}`) will be missing from the bundle.
+   */
   nameClass(item: Item): string {
     if (item.status === 'purchased') return 'line-through opacity-50';
     if (item.status === 'in_cart')   return 'text-white';

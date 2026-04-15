@@ -5,7 +5,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 
 interface HelpSlide {
   emoji: string;
-  iconBg: string;
+  iconBg: string; // full Tailwind class string — must be a literal for JIT scanning
   titleKey: string;
   descKey: string;
 }
@@ -49,7 +49,7 @@ const SLIDES: HelpSlide[] = [
   imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <!-- Backdrop -->
+    <!-- Backdrop: clicking outside the sheet closes the tour -->
     <div
       class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-fade-in"
       (click)="close.emit()"
@@ -58,7 +58,7 @@ const SLIDES: HelpSlide[] = [
       [attr.aria-label]="'help.aria_label' | translate">
     </div>
 
-    <!-- Bottom sheet -->
+    <!-- Bottom sheet (slides up on mobile; centered modal on sm+) -->
     <div
       class="fixed bottom-0 inset-x-0 z-50 animate-slide-up
              sm:bottom-6 sm:left-1/2 sm:-translate-x-1/2 sm:w-[400px]
@@ -68,7 +68,7 @@ const SLIDES: HelpSlide[] = [
       (touchstart)="onTouchStart($event)"
       (touchend)="onTouchEnd($event)">
 
-      <!-- Drag handle (mobile) -->
+      <!-- Drag handle — visual affordance for swipe-to-dismiss on mobile -->
       <div class="flex justify-center pt-3 pb-1 sm:hidden">
         <div class="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
       </div>
@@ -86,29 +86,30 @@ const SLIDES: HelpSlide[] = [
         </svg>
       </button>
 
-      <!-- Slide content (re-renders on index change → animate-fade-in re-triggers) -->
+      <!--
+        Slide content rendered via @for + @if rather than a single binding on
+        currentSlide(). When currentIndex changes, the @if removes the old DOM
+        node and inserts a new one — which re-triggers the animate-fade-in CSS
+        animation. A simpler approach than managing animation state manually.
+      -->
       @for (slide of slides; track slide.titleKey; let i = $index) {
         @if (i === currentIndex()) {
           <div class="px-8 pt-6 pb-2 flex flex-col items-center text-center animate-fade-in">
 
-            <!-- Emoji icon -->
             <div
               class="w-24 h-24 rounded-3xl flex items-center justify-center text-5xl mb-5 shadow-sm"
               [class]="slide.iconBg">
               {{ slide.emoji }}
             </div>
 
-            <!-- Step counter -->
             <p class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
               {{ 'help.step_of' | translate:{ current: i + 1, total: slides.length } }}
             </p>
 
-            <!-- Title -->
             <h3 class="text-xl font-bold text-charcoal dark:text-white mb-3 leading-tight">
               {{ slide.titleKey | translate }}
             </h3>
 
-            <!-- Description -->
             <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-[280px]">
               {{ slide.descKey | translate }}
             </p>
@@ -116,7 +117,7 @@ const SLIDES: HelpSlide[] = [
         }
       }
 
-      <!-- Dot indicators -->
+      <!-- Dot indicators: active dot widens into a pill to signal current position -->
       <div class="flex items-center justify-center gap-2 py-5">
         @for (slide of slides; track slide.titleKey; let i = $index) {
           <button
@@ -130,10 +131,9 @@ const SLIDES: HelpSlide[] = [
         }
       </div>
 
-      <!-- Action buttons -->
+      <!-- Action buttons adapt based on whether the user is on the last slide -->
       <div class="flex gap-3 px-6 pb-8">
         @if (isLast()) {
-          <!-- Done: full-width -->
           <button
             class="flex-1 py-3.5 rounded-2xl bg-forest hover:bg-forest/90
                    text-white text-sm font-bold tracking-wide
@@ -143,7 +143,6 @@ const SLIDES: HelpSlide[] = [
             {{ 'help.done' | translate }} ✓
           </button>
         } @else {
-          <!-- Skip -->
           <button
             class="flex-1 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700
                    text-sm font-semibold text-gray-400 dark:text-gray-500
@@ -152,7 +151,6 @@ const SLIDES: HelpSlide[] = [
             (click)="close.emit()">
             {{ 'help.skip' | translate }}
           </button>
-          <!-- Next -->
           <button
             class="flex-[2] py-3.5 rounded-2xl bg-forest hover:bg-forest/90
                    text-white text-sm font-bold tracking-wide
@@ -178,6 +176,8 @@ export class HelpTourComponent {
   readonly currentSlide = computed(() => this.slides[this.currentIndex()]);
   readonly isLast       = computed(() => this.currentIndex() === this.slides.length - 1);
 
+  // Stores the X position where a touch gesture began; used to calculate
+  // swipe direction and magnitude in onTouchEnd.
   private touchStartX = 0;
 
   // ── Navigation ────────────────────────────────────────────────────────────
@@ -200,6 +200,10 @@ export class HelpTourComponent {
     this.touchStartX = e.touches[0].clientX;
   }
 
+  /**
+   * A 50 px threshold filters accidental micro-swipes while remaining
+   * responsive. Positive delta = swiped right (go back); negative = go forward.
+   */
   onTouchEnd(e: TouchEvent): void {
     const delta = e.changedTouches[0].clientX - this.touchStartX;
     if (delta < -50) this.next();
@@ -208,6 +212,11 @@ export class HelpTourComponent {
 
   // ── Keyboard ──────────────────────────────────────────────────────────────
 
+  /**
+   * Listening at the document level ensures keyboard shortcuts work regardless
+   * of which element has focus — important since the backdrop typically receives
+   * focus when the sheet opens, not the sheet itself.
+   */
   @HostListener('document:keydown', ['$event'])
   onKeyDown(e: KeyboardEvent): void {
     if (e.key === 'Escape')     this.close.emit();
