@@ -1,19 +1,14 @@
 import { Injectable, effect, signal } from '@angular/core';
 import { STORAGE_KEYS } from '../constants/storage-keys';
 
-/**
- * ThemeService controls dark/light mode via Tailwind's `dark` class on <html>.
- *
- * Angular's effect() is used to keep the DOM and localStorage in sync whenever
- * the isDark signal changes — no subscriptions or manual cleanup required.
- */
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-  // Initialised from localStorage, falls back to the OS preference
   readonly isDark = signal<boolean>(this.readPreference());
 
   constructor() {
-    // Runs immediately and re-runs on every isDark change
+    // Apply synchronously to prevent FOUC — effect() runs after first CD cycle
+    document.documentElement.classList.toggle('dark', this.isDark());
+
     effect(() => {
       const dark = this.isDark();
       document.documentElement.classList.toggle('dark', dark);
