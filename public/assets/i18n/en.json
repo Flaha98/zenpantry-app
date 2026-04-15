@@ -63,5 +63,10 @@
   "home.of": "of",
   "home.purchased": "purchased",
   "home.categories": "Categories",
-  "home.clear_filter": "Clear"
+  "home.clear_filter": "Clear",
+
+  "home.notif.empty": "All done, nothing pending!",
+  "home.notif.mark_all": "Move all to Cart",
+
+  "toast.all_in_cart": "All items moved to cart!"
 }
