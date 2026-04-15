@@ -1,0 +1,96 @@
+{
+  "app.title": "ZenPantry",
+  "app.subtitle": "Your smart home pantry",
+
+  "header.theme.light": "Light mode",
+  "header.theme.dark": "Dark mode",
+
+  "filters.all": "All",
+  "filters.category": "Category",
+  "filters.status": "Status",
+  "filters.pending": "Pending",
+  "filters.in_cart": "In Cart",
+  "filters.purchased": "Purchased",
+
+  "categories.fruits": "Fruits",
+  "categories.vegetables": "Vegetables",
+  "categories.dairy": "Dairy",
+  "categories.meat": "Meat",
+  "categories.bakery": "Bakery",
+  "categories.beverages": "Beverages",
+  "categories.cleaning": "Cleaning",
+  "categories.other": "Other",
+
+  "units.unit": "unit",
+  "units.kg": "kg",
+  "units.g": "g",
+  "units.l": "L",
+  "units.ml": "mL",
+  "units.pack": "pack",
+  "units.box": "box",
+  "units.bag": "bag",
+
+  "item.add": "Add Item",
+  "item.edit": "Edit Item",
+  "item.delete": "Delete",
+  "item.cycle_status": "Cycle status for {{name}}",
+  "item.save": "Save",
+  "item.cancel": "Cancel",
+  "item.name": "Name",
+  "item.quantity": "Quantity",
+  "item.unit": "Unit",
+  "item.category": "Category",
+  "item.status": "Status",
+  "item.name.placeholder": "e.g. Apples",
+  "item.quantity.placeholder": "3",
+
+  "toast.added": "Item added!",
+  "toast.updated": "Item updated!",
+  "toast.deleted": "Item removed.",
+
+  "stats.items": "items",
+  "stats.pending": "pending",
+  "stats.in_cart": "in cart",
+
+  "empty.title": "Your pantry is empty",
+  "empty.subtitle": "Tap + to add your first item",
+
+  "validation.name_required": "Name is required",
+
+  "home.title": "Your Pantry",
+  "home.notifications": "Notifications",
+  "home.progress": "Shopping progress",
+  "home.of": "of",
+  "home.purchased": "purchased",
+  "home.categories": "Categories",
+  "home.clear_filter": "Clear",
+
+  "home.notif.empty": "All done, nothing pending!",
+  "home.notif.mark_all": "Move all to Cart",
+
+  "toast.all_in_cart": "All items moved to cart!",
+
+  "help.open":        "Open help",
+  "help.close":       "Close",
+  "help.skip":        "Skip",
+  "help.next":        "Next",
+  "help.done":        "Got it",
+  "help.aria_label":  "Quick help guide",
+  "help.step_of":     "Step {{ current }} of {{ total }}",
+  "help.go_to_step":  "Go to step {{ step }}",
+
+  "help.step1.title": "Add items to your pantry",
+  "help.step1.desc":  "Tap the orange + button to add products with name, quantity, category and status.",
+
+  "help.step2.title": "Filter by category",
+  "help.step2.desc":  "Tap any category card to instantly filter your list. Tap again to show everything.",
+
+  "help.step3.title": "Track item status",
+  "help.step3.desc":  "Tap the item icon to cycle through Pending → In Cart → Purchased. Your progress updates instantly.",
+
+  "help.step4.title": "Notification bell",
+  "help.step4.desc":  "The bell shows all pending items. Tap one to add it to cart, or move them all at once.",
+
+  "help.step5.title": "Make it yours",
+  "help.step5.desc":  "Switch between light and dark mode, and change the language from the buttons in the top bar."
+}

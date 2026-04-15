@@ -1,0 +1,96 @@
+{
+  "app.title": "ZenPantry",
+  "app.subtitle": "A sua despensa inteligente",
+
+  "header.theme.light": "Modo claro",
+  "header.theme.dark": "Modo escuro",
+
+  "filters.all": "Todos",
+  "filters.category": "Categoria",
+  "filters.status": "Estado",
+  "filters.pending": "Pendente",
+  "filters.in_cart": "No Carrinho",
+  "filters.purchased": "Comprado",
+
+  "categories.fruits": "Frutas",
+  "categories.vegetables": "Legumes",
+  "categories.dairy": "Laticínios",
+  "categories.meat": "Carne",
+  "categories.bakery": "Padaria",
+  "categories.beverages": "Bebidas",
+  "categories.cleaning": "Limpeza",
+  "categories.other": "Outros",
+
+  "units.unit": "un",
+  "units.kg": "kg",
+  "units.g": "g",
+  "units.l": "L",
+  "units.ml": "mL",
+  "units.pack": "pacote",
+  "units.box": "caixa",
+  "units.bag": "saco",
+
+  "item.add": "Adicionar Item",
+  "item.edit": "Editar Item",
+  "item.delete": "Eliminar",
+  "item.cycle_status": "Alterar estado de {{name}}",
+  "item.save": "Guardar",
+  "item.cancel": "Cancelar",
+  "item.name": "Nome",
+  "item.quantity": "Quantidade",
+  "item.unit": "Unidade",
+  "item.category": "Categoria",
+  "item.status": "Estado",
+  "item.name.placeholder": "ex: Maçãs",
+  "item.quantity.placeholder": "3",
+
+  "toast.added": "Item adicionado!",
+  "toast.updated": "Item atualizado!",
+  "toast.deleted": "Item removido.",
+
+  "stats.items": "itens",
+  "stats.pending": "pendentes",
+  "stats.in_cart": "no carrinho",
+
+  "empty.title": "A sua despensa está vazia",
+  "empty.subtitle": "Toque em + para adicionar o primeiro item",
+
+  "validation.name_required": "O nome é obrigatório",
+
+  "home.title": "A sua Despensa",
+  "home.notifications": "Notificações",
+  "home.progress": "Progresso das compras",
+  "home.of": "de",
+  "home.purchased": "comprados",
+  "home.categories": "Categorias",
+  "home.clear_filter": "Limpar",
+
+  "home.notif.empty": "Tudo feito, nada pendente!",
+  "home.notif.mark_all": "Mover tudo para o Carrinho",
+
+  "toast.all_in_cart": "Todos os itens movidos para o carrinho!",
+
+  "help.open":        "Abrir ajuda",
+  "help.close":       "Fechar",
+  "help.skip":        "Saltar",
+  "help.next":        "Seguinte",
+  "help.done":        "Entendido",
+  "help.aria_label":  "Guia de ajuda rápida",
+  "help.step_of":     "Passo {{ current }} de {{ total }}",
+  "help.go_to_step":  "Ir para o passo {{ step }}",
+
+  "help.step1.title": "Adicione itens à sua despensa",
+  "help.step1.desc":  "Toque no botão laranja + para adicionar produtos com nome, quantidade, categoria e estado.",
+
+  "help.step2.title": "Filtre por categoria",
+  "help.step2.desc":  "Toque em qualquer categoria para filtrar a lista instantaneamente. Toque novamente para mostrar tudo.",
+
+  "help.step3.title": "Acompanhe o estado dos itens",
+  "help.step3.desc":  "Toque no ícone do item para alternar entre Pendente → No Carrinho → Comprado. O progresso atualiza de imediato.",
+
+  "help.step4.title": "Sino de notificações",
+  "help.step4.desc":  "O sino mostra todos os itens pendentes. Toque num item para o adicionar ao carrinho, ou mova-os todos de uma vez.",
+
+  "help.step5.title": "Personalize a app",
+  "help.step5.desc":  "Alterne entre modo claro e escuro e mude o idioma com os botões na barra superior."
+}
