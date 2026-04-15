@@ -6,20 +6,45 @@ import { STORAGE_KEYS } from '../../../core/constants/storage-keys';
 
 const SUPPORTED_LANGS = ['en', 'pt-PT'] as const;
 
+const LANG_META: Record<string, { label: string; flag: string }> = {
+  'en':    { label: 'EN', flag: '🇬🇧' },
+  'pt-PT': { label: 'PT', flag: '🇵🇹' },
+};
+
 @Component({
   selector: 'app-language-switcher',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="flex items-center gap-0.5 bg-gray-100 dark:bg-gray-700/60 rounded-lg p-0.5">
+    <!-- Segmented control with sliding indicator -->
+    <div class="relative flex items-center bg-gray-100 dark:bg-gray-700/60 rounded-xl p-0.5 h-8">
+
+      <!-- Sliding background indicator -->
+      <span
+        class="absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] rounded-[9px]
+               bg-white dark:bg-gray-600 shadow-sm
+               transition-transform duration-200 ease-in-out"
+        [class]="activeLang() === 'en' ? 'translate-x-0 left-0.5' : 'translate-x-full left-0.5'"
+        aria-hidden="true">
+      </span>
+
+      <!-- Language buttons -->
       @for (lang of langs; track lang) {
         <button
-          class="px-2.5 py-1 rounded-md text-xs font-semibold transition-all duration-200 focus:outline-none"
+          class="relative z-10 flex items-center justify-center gap-1
+                 w-11 h-7 rounded-[9px] text-xs font-semibold
+                 transition-colors duration-200 focus:outline-none
+                 focus-visible:ring-2 focus-visible:ring-forest/40"
           [class]="activeLang() === lang
-            ? 'bg-white dark:bg-gray-600 shadow-sm text-forest dark:text-sage'
+            ? 'text-forest dark:text-sage'
             : 'text-gray-500 dark:text-gray-400 hover:text-charcoal dark:hover:text-gray-200'"
           (click)="use(lang)"
-        >{{ lang === 'pt-PT' ? 'PT' : 'EN' }}</button>
+          [attr.aria-pressed]="activeLang() === lang"
+          [attr.aria-label]="meta(lang).label"
+        >
+          <span class="text-sm leading-none">{{ meta(lang).flag }}</span>
+          <span>{{ meta(lang).label }}</span>
+        </button>
       }
     </div>
   `,
@@ -29,15 +54,17 @@ export class LanguageSwitcherComponent {
 
   readonly langs = SUPPORTED_LANGS;
 
-  // toSignal turns the onLangChange Observable into a Signal.
-  // Any language change (from anywhere) keeps this in sync automatically,
-  // and OnPush change detection reacts without needing markForCheck().
   readonly activeLang = toSignal(
     this.translate.onLangChange.pipe(map(e => e.lang)),
     { initialValue: this.translate.currentLang ?? 'en' },
   );
 
+  meta(lang: string): { label: string; flag: string } {
+    return LANG_META[lang] ?? { label: lang.toUpperCase(), flag: '' };
+  }
+
   use(lang: string): void {
+    if (this.activeLang() === lang) return;
     this.translate.use(lang);
     try { localStorage.setItem(STORAGE_KEYS.lang, lang); } catch { /* noop */ }
   }
