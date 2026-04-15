@@ -6,8 +6,7 @@ import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { firstValueFrom } from 'rxjs';
 
 import { routes } from './app.routes';
-
-const LANG_KEY = 'zenpantry_lang';
+import { STORAGE_KEYS } from './core/constants/storage-keys';
 
 /**
  * Loads the saved (or default) language before the app renders.
@@ -16,7 +15,7 @@ const LANG_KEY = 'zenpantry_lang';
  */
 function initTranslations(translate: TranslateService): () => Promise<void> {
   return () => {
-    const lang = localStorage.getItem(LANG_KEY) ?? 'en';
+    const lang = localStorage.getItem(STORAGE_KEYS.lang) ?? 'en';
     return firstValueFrom(translate.use(lang)).then(() => undefined);
   };
 }

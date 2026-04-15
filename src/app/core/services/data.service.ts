@@ -1,10 +1,9 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { Item, ItemUnit, ItemCategory, ItemStatus, STATUS_CYCLE } from '../models/item.model';
+import { STORAGE_KEYS } from '../constants/storage-keys';
 
 @Injectable({ providedIn: 'root' })
 export class DataService {
-  private readonly STORAGE_KEY = 'zenpantry_items';
-
   private readonly _items = signal<Item[]>(this.loadFromStorage());
 
   readonly items = this._items.asReadonly();
@@ -53,7 +52,7 @@ export class DataService {
 
   private persist(items: Item[]): void {
     try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(items));
+      localStorage.setItem(STORAGE_KEYS.items, JSON.stringify(items));
     } catch {
       // Silently fail if localStorage is unavailable
     }
@@ -61,7 +60,7 @@ export class DataService {
 
   private loadFromStorage(): Item[] {
     try {
-      const raw = localStorage.getItem(this.STORAGE_KEY);
+      const raw = localStorage.getItem(STORAGE_KEYS.items);
       if (raw) return JSON.parse(raw) as Item[];
     } catch {
       // Corrupted data → start fresh with sample items

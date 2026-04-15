@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
+import { STORAGE_KEYS } from '../../../core/constants/storage-keys';
 
-const STORAGE_KEY = 'zenpantry_lang';
 const SUPPORTED_LANGS = ['en', 'pt-PT'] as const;
 
 @Component({
@@ -39,6 +39,6 @@ export class LanguageSwitcherComponent {
 
   use(lang: string): void {
     this.translate.use(lang);
-    try { localStorage.setItem(STORAGE_KEY, lang); } catch { /* noop */ }
+    try { localStorage.setItem(STORAGE_KEYS.lang, lang); } catch { /* noop */ }
   }
 }

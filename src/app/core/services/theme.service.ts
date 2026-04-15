@@ -1,4 +1,5 @@
 import { Injectable, effect, signal } from '@angular/core';
+import { STORAGE_KEYS } from '../constants/storage-keys';
 
 /**
  * ThemeService controls dark/light mode via Tailwind's `dark` class on <html>.
@@ -8,8 +9,6 @@ import { Injectable, effect, signal } from '@angular/core';
  */
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-  private readonly STORAGE_KEY = 'zenpantry_theme';
-
   // Initialised from localStorage, falls back to the OS preference
   readonly isDark = signal<boolean>(this.readPreference());
 
@@ -19,7 +18,7 @@ export class ThemeService {
       const dark = this.isDark();
       document.documentElement.classList.toggle('dark', dark);
       try {
-        localStorage.setItem(this.STORAGE_KEY, dark ? 'dark' : 'light');
+        localStorage.setItem(STORAGE_KEYS.theme, dark ? 'dark' : 'light');
       } catch { /* private mode */ }
     });
   }
@@ -29,7 +28,7 @@ export class ThemeService {
   }
 
   private readPreference(): boolean {
-    const stored = localStorage.getItem(this.STORAGE_KEY);
+    const stored = localStorage.getItem(STORAGE_KEYS.theme);
     if (stored !== null) return stored === 'dark';
     return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
   }
