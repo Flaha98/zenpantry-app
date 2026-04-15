@@ -68,5 +68,29 @@
   "home.notif.empty": "All done, nothing pending!",
   "home.notif.mark_all": "Move all to Cart",
 
-  "toast.all_in_cart": "All items moved to cart!"
+  "toast.all_in_cart": "All items moved to cart!",
+
+  "help.open":        "Open help",
+  "help.close":       "Close",
+  "help.skip":        "Skip",
+  "help.next":        "Next",
+  "help.done":        "Got it",
+  "help.aria_label":  "Quick help guide",
+  "help.step_of":     "Step {{ current }} of {{ total }}",
+  "help.go_to_step":  "Go to step {{ step }}",
+
+  "help.step1.title": "Add items to your pantry",
+  "help.step1.desc":  "Tap the orange + button to add products with name, quantity, category and status.",
+
+  "help.step2.title": "Filter by category",
+  "help.step2.desc":  "Tap any category card to instantly filter your list. Tap again to show everything.",
+
+  "help.step3.title": "Track item status",
+  "help.step3.desc":  "Tap the item icon to cycle through Pending → In Cart → Purchased. Your progress updates instantly.",
+
+  "help.step4.title": "Notification bell",
+  "help.step4.desc":  "The bell shows all pending items. Tap one to add it to cart, or move them all at once.",
+
+  "help.step5.title": "Make it yours",
+  "help.step5.desc":  "Switch between light and dark mode, and change the language from the buttons in the top bar."
 }

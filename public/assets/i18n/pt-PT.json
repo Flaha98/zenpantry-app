@@ -68,5 +68,29 @@
   "home.notif.empty": "Tudo feito, nada pendente!",
   "home.notif.mark_all": "Mover tudo para o Carrinho",
 
-  "toast.all_in_cart": "Todos os itens movidos para o carrinho!"
+  "toast.all_in_cart": "Todos os itens movidos para o carrinho!",
+
+  "help.open":        "Abrir ajuda",
+  "help.close":       "Fechar",
+  "help.skip":        "Saltar",
+  "help.next":        "Seguinte",
+  "help.done":        "Entendido",
+  "help.aria_label":  "Guia de ajuda rápida",
+  "help.step_of":     "Passo {{ current }} de {{ total }}",
+  "help.go_to_step":  "Ir para o passo {{ step }}",
+
+  "help.step1.title": "Adicione itens à sua despensa",
+  "help.step1.desc":  "Toque no botão laranja + para adicionar produtos com nome, quantidade, categoria e estado.",
+
+  "help.step2.title": "Filtre por categoria",
+  "help.step2.desc":  "Toque em qualquer categoria para filtrar a lista instantaneamente. Toque novamente para mostrar tudo.",
+
+  "help.step3.title": "Acompanhe o estado dos itens",
+  "help.step3.desc":  "Toque no ícone do item para alternar entre Pendente → No Carrinho → Comprado. O progresso atualiza de imediato.",
+
+  "help.step4.title": "Sino de notificações",
+  "help.step4.desc":  "O sino mostra todos os itens pendentes. Toque num item para o adicionar ao carrinho, ou mova-os todos de uma vez.",
+
+  "help.step5.title": "Personalize a app",
+  "help.step5.desc":  "Alterne entre modo claro e escuro e mude o idioma com os botões na barra superior."
 }
