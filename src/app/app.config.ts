@@ -40,7 +40,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(), // Required by TranslateHttpLoader to fetch /assets/i18n/*.json
     provideTranslateService({ fallbackLang: 'en' }),
-    ...provideTranslateHttpLoader(), // Configures HttpLoader with default path assets/i18n/
+    ...provideTranslateHttpLoader({ prefix: './assets/i18n/' }), // Relative path respects <base href> on GitHub Pages
     {
       provide: APP_INITIALIZER,
       useFactory: initTranslations,
