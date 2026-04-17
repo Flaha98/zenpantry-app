@@ -105,17 +105,20 @@
   "help.go_to_step":  "Ir para o passo {{ step }}",
 
   "help.step1.title": "Adicione itens à sua despensa",
-  "help.step1.desc":  "Toque no botão laranja + para adicionar produtos com nome, quantidade, categoria e estado.",
+  "help.step1.desc":  "Toque no botão laranja + no mobile ou 'Adicionar Item' no desktop. Preencha nome, quantidade, categoria e estado.",
 
-  "help.step2.title": "Filtre por categoria",
-  "help.step2.desc":  "Toque em qualquer categoria para filtrar a lista instantaneamente. Toque novamente para mostrar tudo.",
+  "help.step2.title": "Filtre por categoria e estado",
+  "help.step2.desc":  "Toque numa categoria para filtrar por tipo, ou num cartão de estado para filtrar por estado. Use os dois em simultâneo para encontrar exatamente o que precisa.",
 
   "help.step3.title": "Acompanhe o estado dos itens",
-  "help.step3.desc":  "Toque no ícone do item para alternar entre Pendente → No Carrinho → Comprado. O progresso atualiza de imediato.",
+  "help.step3.desc":  "Toque num item para alternar entre Pendente → Carrinho → Comprado. A barra de progresso atualiza em tempo real.",
 
-  "help.step4.title": "Sino de notificações",
-  "help.step4.desc":  "O sino mostra todos os itens pendentes. Toque num item para o adicionar ao carrinho, ou mova-os todos de uma vez.",
+  "help.step4.title": "Pesquisa, ordenação e vista",
+  "help.step4.desc":  "Use a barra de pesquisa para encontrar itens rapidamente. Ordene A–Z ou por categoria. Alterne a vista compacta.",
 
-  "help.step5.title": "Personalize a app",
-  "help.step5.desc":  "Alterne entre modo claro e escuro e mude o idioma com os botões na barra superior."
+  "help.step5.title": "Sino de notificações",
+  "help.step5.desc":  "O sino mostra os itens pendentes. Toque num item para o mover ao carrinho, ou use 'Mover tudo'.",
+
+  "help.step6.title": "Personalize a app",
+  "help.step6.desc":  "Alterne entre modo claro e escuro e mude o idioma com os botões na barra superior."
 }
