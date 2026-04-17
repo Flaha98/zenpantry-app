@@ -16,37 +16,18 @@ const LANG_META: Record<string, { label: string; flag: string }> = {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <!-- Segmented control with sliding indicator -->
-    <div class="relative flex items-center bg-gray-100 dark:bg-gray-700/60 rounded-xl p-0.5 h-8">
-
-      <!-- Sliding background indicator -->
-      <span
-        class="absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] rounded-[9px]
-               bg-white dark:bg-gray-600 shadow-sm
-               transition-transform duration-200 ease-in-out"
-        [class]="activeLang() === 'en' ? 'translate-x-0 left-0.5' : 'translate-x-full left-0.5'"
-        aria-hidden="true">
-      </span>
-
-      <!-- Language buttons -->
-      @for (lang of langs; track lang) {
-        <button
-          class="relative z-10 flex items-center justify-center gap-1
-                 w-11 h-7 rounded-[9px] text-xs font-semibold
-                 transition-colors duration-200 focus:outline-none
-                 focus-visible:ring-2 focus-visible:ring-forest/40"
-          [class]="activeLang() === lang
-            ? 'text-forest dark:text-sage'
-            : 'text-gray-500 dark:text-gray-400 hover:text-charcoal dark:hover:text-gray-200'"
-          (click)="use(lang)"
-          [attr.aria-pressed]="activeLang() === lang"
-          [attr.aria-label]="meta(lang).label"
-        >
-          <span class="text-sm leading-none">{{ meta(lang).flag }}</span>
-          <span>{{ meta(lang).label }}</span>
-        </button>
-      }
-    </div>
+    <button
+      class="w-9 h-9 rounded-2xl flex items-center justify-center gap-0.5
+             bg-white dark:bg-dark-card shadow-sm cursor-pointer
+             hover:bg-gray-50 dark:hover:bg-gray-800 hover:shadow-md hover:scale-105
+             active:scale-90 transition-all duration-200
+             focus:outline-none focus-visible:ring-2 focus-visible:ring-forest/40"
+      (click)="toggle()"
+      [attr.aria-label]="meta(nextLang()).label"
+    >
+      <span class="text-sm leading-none">{{ meta(activeLang()).flag }}</span>
+      <span class="text-[10px] font-bold text-charcoal dark:text-white leading-none">{{ meta(activeLang()).label }}</span>
+    </button>
   `,
 })
 export class LanguageSwitcherComponent {
@@ -67,11 +48,13 @@ export class LanguageSwitcherComponent {
     return LANG_META[lang] ?? { label: lang.toUpperCase(), flag: '' };
   }
 
-  use(lang: string): void {
-    // Guard prevents redundant translations and change-detection cycles when
-    // the user taps the already-active language button.
-    if (this.activeLang() === lang) return;
-    this.translate.use(lang);
-    try { localStorage.setItem(STORAGE_KEYS.lang, lang); } catch { /* noop */ }
+  nextLang(): string {
+    return this.langs.find(l => l !== this.activeLang()) ?? this.langs[0];
+  }
+
+  toggle(): void {
+    const next = this.nextLang();
+    this.translate.use(next);
+    try { localStorage.setItem(STORAGE_KEYS.lang, next); } catch { /* noop */ }
   }
 }
