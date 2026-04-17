@@ -105,17 +105,20 @@
   "help.go_to_step":  "Go to step {{ step }}",
 
   "help.step1.title": "Add items to your pantry",
-  "help.step1.desc":  "Tap the orange + button to add products with name, quantity, category and status.",
+  "help.step1.desc":  "Tap the orange + button on mobile, or 'Add Item' on desktop. Fill in name, quantity, category and status.",
 
-  "help.step2.title": "Filter by category",
-  "help.step2.desc":  "Tap any category card to instantly filter your list. Tap again to show everything.",
+  "help.step2.title": "Filter by category & status",
+  "help.step2.desc":  "Tap a category card to filter by type, or tap a stat card to filter by status. Use both at once to narrow down exactly what you need.",
 
   "help.step3.title": "Track item status",
-  "help.step3.desc":  "Tap the item icon to cycle through Pending → In Cart → Purchased. Your progress updates instantly.",
+  "help.step3.desc":  "Tap any item to cycle it through Pending → In Cart → Purchased. Your progress bar updates in real time.",
 
-  "help.step4.title": "Notification bell",
-  "help.step4.desc":  "The bell shows all pending items. Tap one to add it to cart, or move them all at once.",
+  "help.step4.title": "Search, sort & compact",
+  "help.step4.desc":  "Use the search bar to find items fast. Sort A–Z or by category. Toggle compact view to see more at once.",
 
-  "help.step5.title": "Make it yours",
-  "help.step5.desc":  "Switch between light and dark mode, and change the language from the buttons in the top bar."
+  "help.step5.title": "Notification bell",
+  "help.step5.desc":  "The bell shows all pending items. Tap one to move it to cart, or use 'Move all' to do it at once.",
+
+  "help.step6.title": "Make it yours",
+  "help.step6.desc":  "Switch between light and dark mode, and change the language using the buttons in the top bar."
 }
