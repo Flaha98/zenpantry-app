@@ -17,8 +17,12 @@
   "categories.dairy": "Laticínios",
   "categories.meat": "Carne",
   "categories.bakery": "Padaria",
+  "categories.frozen": "Congelados",
+  "categories.pantry": "Mercearia",
+  "categories.snacks": "Snacks",
   "categories.beverages": "Bebidas",
   "categories.cleaning": "Limpeza",
+  "categories.personal_care": "Higiene",
   "categories.other": "Outros",
 
   "units.unit": "un",
@@ -47,15 +51,18 @@
   "toast.added": "Item adicionado!",
   "toast.updated": "Item atualizado!",
   "toast.deleted": "Item removido.",
+  "item.undo": "Desfazer",
 
   "stats.items": "itens",
   "stats.pending": "pendentes",
-  "stats.in_cart": "no carrinho",
+  "stats.in_cart": "Carrinho",
 
   "empty.title": "A sua despensa está vazia",
   "empty.subtitle": "Toque em + para adicionar o primeiro item",
 
   "validation.name_required": "O nome é obrigatório",
+  "validation.integer_required": "Deve ser um número inteiro",
+  "validation.min_value": "Deve ser maior que 0",
 
   "home.title": "A sua Despensa",
   "home.notifications": "Notificações",
@@ -64,11 +71,29 @@
   "home.purchased": "comprados",
   "home.categories": "Categorias",
   "home.clear_filter": "Limpar",
+  "home.all_done": "Tudo feito!",
+  "home.greeting.morning": "Bom dia",
+  "home.greeting.afternoon": "Boa tarde",
+  "home.greeting.evening": "Boa noite",
+  "home.sort.label": "Ordenar",
+  "home.sort.default": "Padrão",
+  "home.sort.name": "A–Z",
+  "home.sort.category": "Categoria",
+
+  "home.search.placeholder": "Pesquisar itens…",
+  "home.search.clear": "Limpar pesquisa",
+  "home.search.empty": "Sem resultados para \"{{q}}\"",
+  "home.search.empty_hint": "Tente um nome diferente ou limpe a pesquisa",
+  "home.compact.on": "Vista compacta",
+  "home.compact.off": "Vista normal",
+  "item.purchased_section": "Comprado · {{count}}",
 
   "home.notif.empty": "Tudo feito, nada pendente!",
   "home.notif.mark_all": "Mover tudo para o Carrinho",
 
   "toast.all_in_cart": "Todos os itens movidos para o carrinho!",
+  "toast.purchased_cleared": "Itens comprados eliminados.",
+  "home.clear_purchased": "Limpar comprados",
 
   "help.open":        "Abrir ajuda",
   "help.close":       "Fechar",
@@ -80,17 +105,20 @@
   "help.go_to_step":  "Ir para o passo {{ step }}",
 
   "help.step1.title": "Adicione itens à sua despensa",
-  "help.step1.desc":  "Toque no botão laranja + para adicionar produtos com nome, quantidade, categoria e estado.",
+  "help.step1.desc":  "Toque no botão laranja + no mobile ou 'Adicionar Item' no desktop. Preencha nome, quantidade, categoria e estado.",
 
-  "help.step2.title": "Filtre por categoria",
-  "help.step2.desc":  "Toque em qualquer categoria para filtrar a lista instantaneamente. Toque novamente para mostrar tudo.",
+  "help.step2.title": "Filtre por categoria e estado",
+  "help.step2.desc":  "Toque numa categoria para filtrar por tipo, ou num cartão de estado para filtrar por estado. Use os dois em simultâneo para encontrar exatamente o que precisa.",
 
   "help.step3.title": "Acompanhe o estado dos itens",
-  "help.step3.desc":  "Toque no ícone do item para alternar entre Pendente → No Carrinho → Comprado. O progresso atualiza de imediato.",
+  "help.step3.desc":  "Toque num item para alternar entre Pendente → Carrinho → Comprado. A barra de progresso atualiza em tempo real.",
 
-  "help.step4.title": "Sino de notificações",
-  "help.step4.desc":  "O sino mostra todos os itens pendentes. Toque num item para o adicionar ao carrinho, ou mova-os todos de uma vez.",
+  "help.step4.title": "Pesquisa, ordenação e vista",
+  "help.step4.desc":  "Use a barra de pesquisa para encontrar itens rapidamente. Ordene A–Z ou por categoria. Alterne a vista compacta.",
 
-  "help.step5.title": "Personalize a app",
-  "help.step5.desc":  "Alterne entre modo claro e escuro e mude o idioma com os botões na barra superior."
+  "help.step5.title": "Sino de notificações",
+  "help.step5.desc":  "O sino mostra os itens pendentes. Toque num item para o mover ao carrinho, ou use 'Mover tudo'.",
+
+  "help.step6.title": "Personalize a app",
+  "help.step6.desc":  "Alterne entre modo claro e escuro e mude o idioma com os botões na barra superior."
 }

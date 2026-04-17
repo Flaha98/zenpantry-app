@@ -4,42 +4,41 @@ import {
 import { TranslatePipe } from '@ngx-translate/core';
 
 interface HelpSlide {
-  emoji: string;
-  iconBg: string; // full Tailwind class string — must be a literal for JIT scanning
+  heroBg: string; // full literal — Tailwind JIT scans these at build time
   titleKey: string;
   descKey: string;
 }
 
 const SLIDES: HelpSlide[] = [
   {
-    emoji: '🛒',
-    iconBg: 'bg-orange-50 dark:bg-orange-900/25',
+    heroBg: 'bg-gradient-to-br from-orange-100 to-amber-50 dark:from-orange-900/40 dark:to-amber-800/20',
     titleKey: 'help.step1.title',
     descKey:  'help.step1.desc',
   },
   {
-    emoji: '🏷️',
-    iconBg: 'bg-forest/10 dark:bg-forest/25',
+    heroBg: 'bg-gradient-to-br from-emerald-100 to-green-50 dark:from-emerald-900/40 dark:to-green-800/20',
     titleKey: 'help.step2.title',
     descKey:  'help.step2.desc',
   },
   {
-    emoji: '✅',
-    iconBg: 'bg-green-50 dark:bg-green-900/25',
+    heroBg: 'bg-gradient-to-br from-blue-100 to-indigo-50 dark:from-blue-900/40 dark:to-indigo-800/20',
     titleKey: 'help.step3.title',
     descKey:  'help.step3.desc',
   },
   {
-    emoji: '🔔',
-    iconBg: 'bg-amber-50 dark:bg-amber-900/25',
+    heroBg: 'bg-gradient-to-br from-violet-100 to-purple-50 dark:from-violet-900/40 dark:to-purple-800/20',
     titleKey: 'help.step4.title',
     descKey:  'help.step4.desc',
   },
   {
-    emoji: '🎨',
-    iconBg: 'bg-purple-50 dark:bg-purple-900/25',
+    heroBg: 'bg-gradient-to-br from-amber-100 to-yellow-50 dark:from-amber-900/40 dark:to-yellow-800/20',
     titleKey: 'help.step5.title',
     descKey:  'help.step5.desc',
+  },
+  {
+    heroBg: 'bg-gradient-to-br from-teal-100 to-emerald-50 dark:from-teal-900/40 dark:to-emerald-800/20',
+    titleKey: 'help.step6.title',
+    descKey:  'help.step6.desc',
   },
 ];
 
@@ -49,7 +48,7 @@ const SLIDES: HelpSlide[] = [
   imports: [TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <!-- Backdrop: clicking outside the sheet closes the tour -->
+    <!-- Backdrop -->
     <div
       class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm animate-fade-in"
       (click)="close.emit()"
@@ -58,70 +57,294 @@ const SLIDES: HelpSlide[] = [
       [attr.aria-label]="'help.aria_label' | translate">
     </div>
 
-    <!-- Bottom sheet (slides up on mobile; centered modal on sm+) -->
+    <!-- Sheet: bottom sheet on mobile, centered modal on sm+ -->
     <div
-      class="fixed bottom-0 inset-x-0 z-50 animate-slide-up
-             sm:bottom-6 sm:left-[calc(50%-200px)] sm:right-auto sm:w-[400px]
-             sm:rounded-3xl rounded-t-3xl
-             bg-white dark:bg-dark-card shadow-2xl overflow-hidden"
+      class="fixed bottom-0 inset-x-0 z-50
+             sm:bottom-6 sm:left-[calc(50%-220px)] sm:right-auto sm:w-[440px]
+             rounded-t-3xl sm:rounded-3xl
+             bg-white dark:bg-dark-card shadow-2xl overflow-hidden
+             animate-slide-up sm:animate-pop-in"
       (click)="$event.stopPropagation()"
       (touchstart)="onTouchStart($event)"
       (touchend)="onTouchEnd($event)">
 
-      <!-- Drag handle — visual affordance for swipe-to-dismiss on mobile -->
-      <div class="flex justify-center pt-3 pb-1 sm:hidden">
+      <!-- Drag handle — mobile only -->
+      <div class="flex justify-center pt-3 pb-0 sm:hidden">
         <div class="w-10 h-1 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="mx-5 mt-4 h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+        <div
+          class="h-full bg-gradient-to-r from-forest to-sage rounded-full transition-all duration-500 ease-out"
+          [style.width.%]="progressPct()">
+        </div>
       </div>
 
       <!-- Close button -->
       <button
         class="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center
-               bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400
-               hover:bg-gray-200 dark:hover:bg-gray-600
-               active:scale-90 transition-all duration-150 z-10"
+               bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500
+               hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-charcoal dark:hover:text-white
+               active:scale-90 transition-all duration-150 cursor-pointer"
         (click)="close.emit()"
         [attr.aria-label]="'help.close' | translate">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
 
       <!--
-        Slide content rendered via @for + @if rather than a single binding on
-        currentSlide(). When currentIndex changes, the @if removes the old DOM
-        node and inserts a new one — which re-triggers the animate-fade-in CSS
-        animation. A simpler approach than managing animation state manually.
+        @for + @if re-inserts the DOM node on each slide change,
+        re-triggering animate-fade-in without manual animation state.
       -->
       @for (slide of slides; track slide.titleKey; let i = $index) {
         @if (i === currentIndex()) {
-          <div class="px-8 pt-6 pb-2 flex flex-col items-center text-center animate-fade-in">
 
-            <div
-              class="w-24 h-24 rounded-3xl flex items-center justify-center text-5xl mb-5 shadow-sm"
-              [class]="slide.iconBg">
-              {{ slide.emoji }}
-            </div>
+          <!-- Hero zone: unique gradient + illustration per step -->
+          <div
+            class="mx-5 mt-3 rounded-2xl h-36 flex items-center justify-center
+                   overflow-hidden relative animate-fade-in"
+            [class]="slide.heroBg">
 
-            <p class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-2">
+            @switch (i) {
+
+              <!-- Step 1: Add items — FAB + floating item cards -->
+              @case (0) {
+                <div class="absolute -top-6 -right-6 w-28 h-28 rounded-full bg-orange-300/40 dark:bg-orange-500/20 blur-2xl"></div>
+                <div class="absolute -bottom-4 -left-4 w-20 h-20 rounded-full bg-amber-300/40 dark:bg-amber-500/20 blur-xl"></div>
+                <div class="absolute left-6 top-5 w-[100px] h-8 rounded-xl bg-white/70 dark:bg-white/10 shadow-sm flex items-center px-2.5 gap-2">
+                  <span class="text-sm leading-none">🍎</span>
+                  <div class="flex-1 h-1.5 bg-gray-200/80 dark:bg-gray-600/60 rounded-full"></div>
+                </div>
+                <div class="absolute right-6 bottom-5 w-[88px] h-8 rounded-xl bg-white/70 dark:bg-white/10 shadow-sm flex items-center px-2.5 gap-2">
+                  <span class="text-sm leading-none">🥛</span>
+                  <div class="flex-1 h-1.5 bg-gray-200/80 dark:bg-gray-600/60 rounded-full"></div>
+                </div>
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600
+                            shadow-xl shadow-orange-500/40 flex items-center justify-center z-10">
+                  <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                </div>
+              }
+
+              <!-- Step 2: Filter by category + status (combinable) -->
+              @case (1) {
+                <div class="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-emerald-300/40 dark:bg-emerald-500/20 blur-xl"></div>
+                <div class="flex items-center gap-3 z-10">
+
+                  <!-- Active filters column -->
+                  <div class="flex flex-col gap-2">
+                    <!-- Category filter active -->
+                    <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-forest shadow-lg shadow-forest/30
+                                text-white text-[11px] font-bold whitespace-nowrap">
+                      <span class="text-sm leading-none">🍎</span> Fruits
+                    </div>
+                    <!-- Status filter active -->
+                    <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-400 shadow-md shadow-amber-400/30
+                                text-amber-900 text-[11px] font-bold whitespace-nowrap">
+                      <svg class="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      Pending
+                    </div>
+                    <!-- Inactive filter -->
+                    <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white/70 dark:bg-white/10 shadow-sm
+                                text-[11px] font-semibold text-charcoal/50 dark:text-white/40 whitespace-nowrap">
+                      <span class="text-sm leading-none">🥛</span> Dairy
+                    </div>
+                  </div>
+
+                  <!-- Arrow showing combined result -->
+                  <div class="flex flex-col items-center gap-0.5 flex-shrink-0">
+                    <svg class="w-4 h-4 text-emerald-600/70 dark:text-emerald-400/70"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                    </svg>
+                    <span class="text-[8px] font-bold text-emerald-600/60 dark:text-emerald-400/60 whitespace-nowrap">both</span>
+                  </div>
+
+                  <!-- Filtered results (2 items matching fruits + pending) -->
+                  <div class="flex flex-col gap-1.5">
+                    @for (emoji of ['🍎','🍊']; track emoji) {
+                      <div class="w-[96px] h-8 rounded-xl bg-white/80 dark:bg-white/10 shadow-sm flex items-center px-2 gap-1.5">
+                        <span class="text-xs leading-none">{{ emoji }}</span>
+                        <div class="flex-1 h-1.5 bg-gray-200 dark:bg-gray-600 rounded-full"></div>
+                        <span class="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0"></span>
+                      </div>
+                    }
+                    <!-- Dim "no more results" hint -->
+                    <div class="w-[96px] h-8 rounded-xl bg-white/30 dark:bg-white/5 flex items-center px-2 gap-1.5 opacity-40">
+                      <span class="text-xs leading-none">🥛</span>
+                      <div class="flex-1 h-1.5 bg-gray-200 dark:bg-gray-600 rounded-full opacity-50"></div>
+                    </div>
+                  </div>
+
+                </div>
+              }
+
+              <!-- Step 3: Status cycle — pending → in_cart → purchased -->
+              @case (2) {
+                <div class="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-blue-300/40 dark:bg-blue-500/20 blur-xl"></div>
+                <div class="flex items-center gap-2.5 z-10">
+                  <div class="flex flex-col items-center gap-1.5">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center shadow-sm">
+                      <svg class="w-6 h-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                    </div>
+                    <span class="text-[9px] font-bold text-amber-600 dark:text-amber-400 whitespace-nowrap">Pending</span>
+                  </div>
+                  <svg class="w-4 h-4 text-gray-400 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                  </svg>
+                  <!-- Active step highlighted with ring -->
+                  <div class="flex flex-col items-center gap-1.5">
+                    <div class="w-12 h-12 rounded-2xl bg-forest/15 dark:bg-forest/40 flex items-center justify-center
+                                shadow-md ring-2 ring-forest/40 dark:ring-sage/40">
+                      <svg class="w-6 h-6 text-forest dark:text-sage" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                      </svg>
+                    </div>
+                    <span class="text-[9px] font-bold text-forest dark:text-sage whitespace-nowrap">In Cart</span>
+                  </div>
+                  <svg class="w-4 h-4 text-gray-400 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                  </svg>
+                  <div class="flex flex-col items-center gap-1.5">
+                    <div class="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center shadow-sm">
+                      <svg class="w-6 h-6 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    </div>
+                    <span class="text-[9px] font-bold text-gray-500 dark:text-gray-400 whitespace-nowrap">Purchased</span>
+                  </div>
+                </div>
+              }
+
+              <!-- Step 4: Search, sort & compact view -->
+              @case (3) {
+                <div class="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-violet-300/40 dark:bg-violet-500/20 blur-xl"></div>
+                <div class="flex flex-col gap-2.5 w-52 z-10">
+                  <div class="flex items-center gap-2 bg-white/80 dark:bg-white/10 rounded-xl px-3 py-2 shadow-sm">
+                    <svg class="w-4 h-4 text-violet-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+                    </svg>
+                    <div class="h-1.5 w-24 bg-gray-200/80 dark:bg-gray-600/60 rounded-full"></div>
+                    <div class="h-1.5 w-8 bg-violet-300/60 dark:bg-violet-500/40 rounded-full ml-auto"></div>
+                  </div>
+                  <div class="flex gap-2">
+                    <div class="flex items-center justify-center gap-1.5 bg-violet-500 dark:bg-violet-600
+                                rounded-lg py-1.5 px-2.5 shadow-sm flex-1">
+                      <svg class="w-3 h-3 text-white flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
+                      </svg>
+                      <span class="text-[9px] font-bold text-white whitespace-nowrap">A–Z</span>
+                    </div>
+                    <div class="flex items-center justify-center bg-white/70 dark:bg-white/10
+                                rounded-lg py-1.5 px-2.5 shadow-sm flex-1">
+                      <span class="text-[9px] font-semibold text-charcoal dark:text-white/80 whitespace-nowrap">Category</span>
+                    </div>
+                    <div class="w-9 h-9 rounded-lg bg-white/70 dark:bg-white/10 flex items-center justify-center shadow-sm flex-shrink-0">
+                      <svg class="w-4 h-4 text-charcoal dark:text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M4 5h6v6H4V5zm10 0h6v6h-6V5zM4 15h6v6H4v-6zm10 0h6v6h-6v-6z"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              }
+
+              <!-- Step 5: Notification bell -->
+              @case (4) {
+                <div class="absolute -top-4 -left-4 w-24 h-24 rounded-full bg-amber-300/40 dark:bg-amber-500/20 blur-xl"></div>
+                <div class="flex items-center gap-4 z-10">
+                  <div class="relative flex-shrink-0">
+                    <div class="w-14 h-14 rounded-2xl bg-orange-50 dark:bg-orange-900/40
+                                flex items-center justify-center shadow-md">
+                      <svg class="w-7 h-7 text-orange-500" fill="none" viewBox="0 0 24 24"
+                           stroke="currentColor" stroke-width="1.8">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                      </svg>
+                    </div>
+                    <span class="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 px-1 rounded-full
+                                 bg-orange-500 text-white text-[10px] font-bold
+                                 flex items-center justify-center shadow-sm">3</span>
+                  </div>
+                  <div class="flex flex-col gap-1.5">
+                    @for (emoji of ['🍎','🥛','🥩']; track emoji) {
+                      <div class="w-[108px] h-8 rounded-xl bg-white/70 dark:bg-white/10 shadow-sm flex items-center px-2.5 gap-2">
+                        <span class="text-xs leading-none">{{ emoji }}</span>
+                        <div class="flex-1 h-1.5 bg-gray-200 dark:bg-gray-600 rounded-full"></div>
+                        <svg class="w-3 h-3 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                             stroke="currentColor" stroke-width="2.5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                        </svg>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- Step 6: Customize — theme toggle + language buttons -->
+              @case (5) {
+                <div class="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-teal-300/40 dark:bg-teal-500/20 blur-xl"></div>
+                <div class="flex flex-col items-center gap-3 z-10">
+                  <div class="flex items-center gap-3 bg-white/80 dark:bg-white/10 rounded-2xl px-4 py-2.5 shadow-sm">
+                    <div class="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
+                      <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+                      </svg>
+                    </div>
+                    <div class="w-11 h-6 rounded-full bg-forest relative shadow-inner">
+                      <div class="absolute right-0.5 top-0.5 w-5 h-5 rounded-full bg-white shadow-sm"></div>
+                    </div>
+                    <div class="w-8 h-8 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
+                      <svg class="w-4 h-4 text-indigo-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9 9 0 008.354-5.646z"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-forest shadow-lg shadow-forest/30">
+                      <span class="text-base leading-none">🇬🇧</span>
+                      <span class="text-[11px] font-bold text-white">EN</span>
+                    </div>
+                    <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/70 dark:bg-white/10 shadow-sm">
+                      <span class="text-base leading-none">🇵🇹</span>
+                      <span class="text-[11px] font-semibold text-charcoal dark:text-white/80">PT</span>
+                    </div>
+                  </div>
+                </div>
+              }
+
+            } <!-- end @switch -->
+          </div>
+
+          <!-- Text content -->
+          <div class="px-6 pt-4 pb-1 text-center animate-fade-in">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2">
               {{ 'help.step_of' | translate:{ current: i + 1, total: slides.length } }}
             </p>
-
-            <h3 class="text-xl font-bold text-charcoal dark:text-white mb-3 leading-tight">
+            <h3 class="text-lg font-bold text-charcoal dark:text-white leading-tight mb-2">
               {{ slide.titleKey | translate }}
             </h3>
-
-            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-[280px]">
+            <p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
               {{ slide.descKey | translate }}
             </p>
           </div>
+
         }
       }
 
-      <!-- Dot indicators: active dot widens into a pill to signal current position -->
-      <div class="flex items-center justify-center gap-2 py-5">
+      <!-- Dot indicators: active dot widens to pill -->
+      <div class="flex items-center justify-center gap-2 py-4">
         @for (slide of slides; track slide.titleKey; let i = $index) {
           <button
-            class="rounded-full transition-all duration-300"
+            class="rounded-full transition-all duration-300 cursor-pointer"
             [class]="i === currentIndex()
               ? 'w-6 h-2 bg-forest dark:bg-sage'
               : 'w-2 h-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600'"
@@ -131,38 +354,68 @@ const SLIDES: HelpSlide[] = [
         }
       </div>
 
-      <!-- Action buttons adapt based on whether the user is on the last slide -->
-      <div class="flex gap-3 px-6 pb-8">
-        @if (isLast()) {
+      <!-- Action buttons -->
+      <div class="flex items-center gap-2 px-5 pb-8">
+
+        <!-- Back (hidden on first slide) -->
+        @if (currentIndex() > 0) {
           <button
-            class="flex-1 py-3.5 rounded-2xl bg-forest hover:bg-forest/90
-                   text-white text-sm font-bold tracking-wide
-                   active:scale-95 transition-all duration-150
-                   shadow-md shadow-forest/30"
-            (click)="close.emit()">
-            {{ 'help.done' | translate }} ✓
+            class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0
+                   bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400
+                   hover:bg-gray-200 dark:hover:bg-gray-700
+                   active:scale-90 transition-all duration-150 cursor-pointer"
+            (click)="prev()"
+            [attr.aria-label]="'help.skip' | translate">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
           </button>
-        } @else {
+        }
+
+        <!-- Skip (first slide only) -->
+        @if (currentIndex() === 0) {
           <button
-            class="flex-1 py-3.5 rounded-2xl border border-gray-200 dark:border-gray-700
+            class="flex-1 py-3 rounded-2xl border border-gray-200 dark:border-gray-700
                    text-sm font-semibold text-gray-400 dark:text-gray-500
                    hover:bg-gray-50 dark:hover:bg-gray-800
-                   active:scale-95 transition-all duration-150"
+                   active:scale-95 transition-all duration-150 cursor-pointer"
             (click)="close.emit()">
             {{ 'help.skip' | translate }}
           </button>
+        }
+
+        <!-- Next -->
+        @if (!isLast()) {
           <button
-            class="flex-[2] py-3.5 rounded-2xl bg-forest hover:bg-forest/90
+            class="flex-1 py-3 rounded-2xl bg-forest hover:bg-forest/90
                    text-white text-sm font-bold tracking-wide
                    active:scale-95 transition-all duration-150
-                   shadow-md shadow-forest/30 flex items-center justify-center gap-2"
+                   shadow-md shadow-forest/25
+                   flex items-center justify-center gap-2 cursor-pointer"
             (click)="next()">
             {{ 'help.next' | translate }}
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </button>
+        } @else {
+          <!-- Done — gradient CTA on last slide -->
+          <button
+            class="flex-1 py-3 rounded-2xl
+                   bg-gradient-to-r from-forest to-sage
+                   hover:from-forest/95 hover:to-sage/95
+                   text-white text-sm font-bold tracking-wide
+                   active:scale-95 transition-all duration-200
+                   shadow-md shadow-forest/30
+                   flex items-center justify-center gap-2 cursor-pointer"
+            (click)="close.emit()">
+            {{ 'help.done' | translate }}
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </button>
         }
+
       </div>
     </div>
   `,
@@ -171,16 +424,13 @@ export class HelpTourComponent {
   readonly close = output<void>();
 
   readonly slides = SLIDES;
-
   readonly currentIndex = signal(0);
-  readonly currentSlide = computed(() => this.slides[this.currentIndex()]);
   readonly isLast       = computed(() => this.currentIndex() === this.slides.length - 1);
+  readonly progressPct  = computed(() =>
+    ((this.currentIndex() + 1) / this.slides.length) * 100
+  );
 
-  // Stores the X position where a touch gesture began; used to calculate
-  // swipe direction and magnitude in onTouchEnd.
   private touchStartX = 0;
-
-  // ── Navigation ────────────────────────────────────────────────────────────
 
   next(): void {
     if (!this.isLast()) this.currentIndex.update(i => i + 1);
@@ -194,29 +444,16 @@ export class HelpTourComponent {
     this.currentIndex.set(index);
   }
 
-  // ── Swipe gesture ─────────────────────────────────────────────────────────
-
   onTouchStart(e: TouchEvent): void {
     this.touchStartX = e.touches[0].clientX;
   }
 
-  /**
-   * A 50 px threshold filters accidental micro-swipes while remaining
-   * responsive. Positive delta = swiped right (go back); negative = go forward.
-   */
   onTouchEnd(e: TouchEvent): void {
     const delta = e.changedTouches[0].clientX - this.touchStartX;
     if (delta < -50) this.next();
     else if (delta > 50) this.prev();
   }
 
-  // ── Keyboard ──────────────────────────────────────────────────────────────
-
-  /**
-   * Listening at the document level ensures keyboard shortcuts work regardless
-   * of which element has focus — important since the backdrop typically receives
-   * focus when the sheet opens, not the sheet itself.
-   */
   @HostListener('document:keydown', ['$event'])
   onKeyDown(e: KeyboardEvent): void {
     if (e.key === 'Escape')     this.close.emit();
