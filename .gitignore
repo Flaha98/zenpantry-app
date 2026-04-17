@@ -1,0 +1,52 @@
+# ── Compiled output ──────────────────────────────────────────────────────────
+/dist
+/tmp
+/out-tsc
+/bazel-out
+
+# ── Node ─────────────────────────────────────────────────────────────────────
+/node_modules
+npm-debug.log
+yarn-error.log
+
+# ── Angular ──────────────────────────────────────────────────────────────────
+/.angular/cache
+/coverage
+/typings
+/connect.lock
+testem.log
+/libpeerconnection.log
+__screenshots__/
+
+# ── IDEs and editors ─────────────────────────────────────────────────────────
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.history/*
+
+# ── Visual Studio Code ───────────────────────────────────────────────────────
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/mcp.json
+
+# ── Sass cache ───────────────────────────────────────────────────────────────
+.sass-cache/
+
+# ── OS files ─────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Temporary / personal files at repo root (WhatsApp screenshots, previews) ─
+/*.jpeg
+/*.jpg
+/*.png
+/*.webp
+/*.gif
