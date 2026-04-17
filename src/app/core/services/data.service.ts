@@ -65,6 +65,21 @@ export class DataService {
     this.mutate(items => items.filter(item => item.id !== id));
   }
 
+  /** Re-inserts a previously deleted item preserving its original id and createdAt. */
+  restoreItem(item: Item): void {
+    this.mutate(items => [item, ...items]);
+  }
+
+  /** Removes all purchased items in one atomic mutation. */
+  clearPurchased(): void {
+    this.mutate(items => items.filter(i => i.status !== 'purchased'));
+  }
+
+  /** Re-inserts a set of items (used for bulk undo after clearPurchased). */
+  restoreItems(restored: Item[]): void {
+    this.mutate(items => [...restored, ...items]);
+  }
+
   cycleStatus(id: string): void {
     const item = this._items().find(i => i.id === id);
     if (!item) return;
