@@ -1,12 +1,14 @@
 import {
   ChangeDetectionStrategy, Component, computed, inject, signal,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 import { TitleCasePipe } from '@angular/common';
-import { TranslatePipe } from '@ngx-translate/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { DataService } from '../../../core/services/data.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { STORAGE_KEYS } from '../../../core/constants/storage-keys';
-import { Item, ItemCategory, CATEGORIES, CATEGORY_CONFIG } from '../../../core/models/item.model';
+import { Item, ItemCategory, ItemStatus, CATEGORIES, CATEGORY_CONFIG } from '../../../core/models/item.model';
 import { ItemListComponent } from '../../pantry/item-list/item-list.component';
 import { ItemFormComponent, ItemFormPayload } from '../../pantry/item-form/item-form.component';
 import { HelpTourComponent } from '../../../shared/components/help-tour/help-tour.component';
@@ -24,284 +26,404 @@ interface CategoryStat {
   imports: [TranslatePipe, TitleCasePipe, ItemListComponent, ItemFormComponent, HelpTourComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="min-h-screen bg-cream dark:bg-dark-bg">
+    <div class="bg-cream dark:bg-dark-bg">
 
-      <!-- ── HERO ───────────────────────────────────────────────────────── -->
-      <section class="px-4 pt-6 pb-2 animate-fade-in">
+      <!--
+        Layout strategy:
+        • Mobile  → stacked sections, normal scroll
+        • Desktop → two-column: sticky sidebar (stats + categories) +
+                    independent-scrolling main panel (items, 2-col grid on lg+)
+        The inner wrapper is fixed below the header on desktop so both
+        columns scroll independently without a double-scrollbar.
+      -->
+      <div class="pt-16 min-h-dvh
+                  md:fixed md:inset-x-0 md:top-16 md:bottom-0 md:pt-0
+                  md:flex md:overflow-hidden">
 
-        <div class="flex items-start justify-between mb-5">
-          <div>
-            <p class="text-sm text-gray-400 dark:text-gray-500 flex items-center gap-1.5">
-              <span class="text-base leading-none">{{ greeting().emoji }}</span>
-              {{ greeting().text }}
-            </p>
-            <h1 class="text-2xl font-bold text-charcoal dark:text-white mt-0.5 tracking-tight">
-              {{ 'home.title' | translate }}
-            </h1>
-          </div>
+        <!-- ── SIDEBAR: greeting · stats · categories ─────────────────── -->
+        <aside class="bg-cream dark:bg-dark-bg
+                      md:w-64 lg:w-72 md:flex-shrink-0
+                      md:overflow-y-auto md:overscroll-contain
+                      md:border-r md:border-gray-200/70 dark:md:border-gray-700/50">
 
-          <!-- Bell button + notification panel -->
-          <div class="relative">
+          <!-- HERO ──────────────────────────────────────────────────────── -->
+          <section class="px-4 pt-6 pb-2">
 
-            <button
-              class="relative w-11 h-11 rounded-2xl flex items-center justify-center
-                     bg-white dark:bg-dark-card shadow-sm
-                     active:scale-90 transition-all duration-200"
-              [attr.aria-label]="'home.notifications' | translate"
-              (click)="toggleNotifications()"
-            >
-              <svg class="w-5 h-5 text-charcoal dark:text-white" fill="none" viewBox="0 0 24 24"
-                   stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round"
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-              @if (stats().pending > 0) {
-                <span
-                  class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1
-                         bg-orange-500 rounded-full text-white text-[10px] font-bold
-                         flex items-center justify-center animate-pop-in">
-                  {{ stats().pending > 9 ? '9+' : stats().pending }}
-                </span>
-              }
-            </button>
+            <div class="mb-4 flex items-center gap-3 animate-fade-in">
 
-            @if (showNotifications()) {
-              <!-- Backdrop: click fuera cierra el panel -->
-              <div
-                class="fixed inset-0 z-40"
-                (click)="closeNotifications()">
+              <!-- Animated emoji pill with colour-matched glow -->
+              <div class="relative flex-shrink-0 isolate">
+                <!-- Halo (behind) -->
+                <div
+                  class="absolute inset-0 rounded-2xl blur-md scale-150 -z-10 animate-glow-pulse"
+                  [class]="greeting().glowClass"
+                ></div>
+                <!-- Pill -->
+                <div
+                  class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl
+                         shadow-sm animate-wave select-none"
+                  [class]="greeting().bgClass"
+                >{{ greeting().emoji }}</div>
               </div>
 
-              <!-- Notification panel -->
-              <div
-                class="absolute top-full mt-2 right-0 w-72 z-50
-                       bg-white dark:bg-dark-card rounded-2xl
-                       shadow-xl shadow-black/10 dark:shadow-black/40
-                       border border-gray-100 dark:border-gray-800/60
-                       animate-fade-in overflow-hidden">
+              <!-- Text -->
+              <div>
+                <p class="text-[11px] font-semibold uppercase tracking-widest
+                           text-gray-500 dark:text-gray-400 leading-none">
+                  {{ greeting().key | translate }}
+                </p>
+                <h1 class="text-2xl font-bold text-charcoal dark:text-white
+                            tracking-tight leading-tight mt-1">
+                  {{ 'home.title' | translate }}
+                </h1>
+              </div>
 
-                <!-- Panel header -->
-                <div class="flex items-center justify-between px-4 py-3
-                            border-b border-gray-100 dark:border-gray-800/60">
-                  <span class="text-sm font-bold text-charcoal dark:text-white flex items-center gap-2">
-                    🔔 {{ 'stats.pending' | translate }}
-                    @if (pendingItems().length > 0) {
-                      <span class="min-w-[20px] h-5 px-1 bg-orange-500 rounded-full
-                                   text-white text-[10px] font-bold
-                                   flex items-center justify-center">
-                        {{ pendingItems().length }}
-                      </span>
-                    }
+            </div>
+
+            <!-- Progress card -->
+            @if (stats().total > 0) {
+              <div class="bg-white dark:bg-dark-card rounded-xl px-3.5 py-2.5 shadow-sm mb-3
+                          border border-gray-100/80 dark:border-gray-800/60">
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-semibold text-charcoal dark:text-white flex-1 min-w-0 truncate mr-2">
+                    {{ 'home.progress' | translate }}
                   </span>
-                  <button
-                    class="w-6 h-6 rounded-full flex items-center justify-center
-                           text-gray-400 hover:text-charcoal dark:hover:text-white
-                           hover:bg-gray-100 dark:hover:bg-gray-700
-                           active:scale-90 transition-all duration-150"
-                    (click)="closeNotifications()"
-                    aria-label="Close">
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
-                         stroke="currentColor" stroke-width="2.5">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+                  <span
+                    class="text-xs font-bold tabular-nums"
+                    [class]="completionPct() === 100
+                      ? 'text-forest dark:text-sage'
+                      : 'text-orange-500'">
+                    {{ completionPct() }}%{{ completionPct() === 100 ? ' 🎉' : '' }}
+                  </span>
                 </div>
-
-                <!-- Empty state -->
-                @if (pendingItems().length === 0) {
-                  <div class="py-8 flex flex-col items-center gap-2">
-                    <span class="text-3xl">🎉</span>
-                    <p class="text-sm text-gray-400 dark:text-gray-500">
-                      {{ 'home.notif.empty' | translate }}
-                    </p>
-                  </div>
-
-                } @else {
-                  <!-- Pending items list -->
-                  <div class="max-h-52 overflow-y-auto">
-                    @for (item of pendingItems(); track item.id) {
-                      <button
-                        class="w-full flex items-center gap-3 px-4 py-3 text-left
-                               hover:bg-gray-50 dark:hover:bg-gray-700/50
-                               active:bg-gray-100 dark:active:bg-gray-700
-                               transition-colors duration-150"
-                        (click)="moveToCart(item.id)">
-                        <span class="text-xl leading-none flex-shrink-0">
-                          {{ categoryEmoji(item) }}
-                        </span>
-                        <div class="flex-1 min-w-0">
-                          <p class="text-sm font-medium text-charcoal dark:text-white truncate">
-                            {{ item.name }}
-                          </p>
-                          <p class="text-xs text-gray-400">
-                            {{ item.quantity }}&nbsp;{{ 'units.' + item.unit | translate }}
-                          </p>
-                        </div>
-                        <!-- Cart icon: tap to move to cart -->
-                        <svg class="w-4 h-4 text-sage flex-shrink-0" fill="none"
-                             viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                          <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                      </button>
+                <div class="h-1.5 bg-gray-100 dark:bg-gray-700/80 rounded-full overflow-hidden">
+                  <div
+                    class="relative h-full rounded-full transition-all duration-700 ease-out overflow-hidden"
+                    [class]="completionPct() === 100
+                      ? 'bg-gradient-to-r from-forest to-sage'
+                      : 'bg-gradient-to-r from-orange-400 to-orange-500'"
+                    [style.width.%]="completionPct()">
+                    @if (completionPct() > 0) {
+                      <span class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent
+                                   animate-shimmer"></span>
                     }
                   </div>
-
-                  <!-- Mark all footer -->
-                  <div class="px-4 py-3 border-t border-gray-100 dark:border-gray-800/60">
+                </div>
+                <div class="mt-1.5 flex items-center justify-between gap-2">
+                  <p class="text-[10px] text-gray-500 dark:text-gray-400">
+                    <span class="tabular-nums font-semibold text-charcoal dark:text-white">{{ stats().purchased }}</span>
+                    &nbsp;/&nbsp;
+                    <span class="tabular-nums">{{ stats().total }}</span>
+                    &nbsp;{{ 'home.purchased' | translate }}
+                  </p>
+                  @if (stats().purchased > 0) {
                     <button
-                      class="w-full py-2.5 rounded-xl bg-forest hover:bg-forest/90
-                             text-white text-sm font-semibold
-                             active:scale-95 transition-all duration-150
-                             shadow-sm shadow-forest/25"
-                      (click)="markAllInCart()">
-                      {{ 'home.notif.mark_all' | translate }}
+                      class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0
+                             bg-red-100 dark:bg-red-900/30 text-red-400 dark:text-red-400
+                             hover:bg-red-200 dark:hover:bg-red-800/50 hover:text-red-500
+                             hover:scale-110 active:scale-90
+                             transition-all duration-150 animate-float cursor-pointer"
+                      (click)="onClearPurchased()"
+                      [attr.aria-label]="'home.clear_purchased' | translate"
+                    >
+                      <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m-7 0a1 1 0 00-1 1v0m9-1a1 1 0 011 1v0M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3"/>
+                      </svg>
                     </button>
-                  </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Stat cards -->
+            <div class="grid grid-cols-3 gap-2">
+
+              <button
+                class="rounded-xl p-2.5 text-center cursor-pointer transition-all duration-200 active:scale-95 animate-pop-in
+                       hover:-translate-y-0.5 hover:shadow-lg
+                       focus:outline-none focus-visible:ring-2 focus-visible:ring-forest/40"
+                [class]="statTotalClass()"
+                style="animation-delay: 0ms"
+                (click)="selectStatus('all')"
+                [attr.aria-pressed]="selectedStatus() === 'all'"
+                [attr.aria-label]="'stats.items' | translate"
+              >
+                <p class="text-xl font-bold tabular-nums leading-none"
+                   [class]="selectedStatus() === 'all' ? 'text-white' : 'text-white/80'">
+                  {{ stats().total }}
+                </p>
+                <p class="text-xs mt-1 font-medium"
+                   [class]="selectedStatus() === 'all' ? 'text-white/90' : 'text-white/70'">
+                  {{ 'stats.items' | translate }}
+                </p>
+              </button>
+
+              <button
+                class="rounded-xl p-2.5 text-center cursor-pointer transition-all duration-200 active:scale-95 animate-pop-in
+                       hover:-translate-y-0.5 hover:shadow-lg
+                       focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/50"
+                [class]="statPendingClass()"
+                style="animation-delay: 60ms"
+                (click)="selectStatus('pending')"
+                [attr.aria-pressed]="selectedStatus() === 'pending'"
+                [attr.aria-label]="'filters.pending' | translate"
+              >
+                <p class="text-xl font-bold tabular-nums leading-none"
+                   [class]="selectedStatus() === 'pending' ? 'text-amber-900' : 'text-amber-700 dark:text-amber-400'">
+                  {{ stats().pending }}
+                </p>
+                <p class="text-xs mt-1 font-medium"
+                   [class]="selectedStatus() === 'pending' ? 'text-amber-800' : 'text-amber-700 dark:text-amber-400'">
+                  {{ 'filters.pending' | translate }}
+                </p>
+              </button>
+
+              <button
+                class="rounded-xl p-2.5 text-center cursor-pointer transition-all duration-200 active:scale-95 animate-pop-in
+                       hover:-translate-y-0.5 hover:shadow-lg
+                       focus:outline-none focus-visible:ring-2 focus-visible:ring-sage/50"
+                [class]="statInCartClass()"
+                style="animation-delay: 120ms"
+                (click)="selectStatus('in_cart')"
+                [attr.aria-pressed]="selectedStatus() === 'in_cart'"
+                [attr.aria-label]="'filters.in_cart' | translate"
+              >
+                <p class="text-xl font-bold tabular-nums leading-none"
+                   [class]="selectedStatus() === 'in_cart' ? 'text-white' : 'text-forest dark:text-green-300'">
+                  {{ stats().inCart }}
+                </p>
+                <p class="text-xs mt-1 font-medium"
+                   [class]="selectedStatus() === 'in_cart' ? 'text-white/90' : 'text-forest dark:text-green-300'">
+                  {{ 'stats.in_cart' | translate }}
+                </p>
+              </button>
+
+            </div>
+          </section>
+
+          <!-- CATEGORIES ─────────────────────────────────────────────────── -->
+          <section class="px-4 pt-3 pb-4">
+            <div class="mb-2">
+              <h2 class="font-bold text-charcoal dark:text-white text-xs uppercase tracking-wide">
+                {{ 'home.categories' | translate }}
+              </h2>
+            </div>
+
+            @if (nonEmptyCategoryStats().length === 0) {
+              <p class="text-xs text-gray-500 dark:text-gray-400 py-1">
+                {{ 'empty.subtitle' | translate }}
+              </p>
+            } @else {
+              <!-- Mobile: horizontal scroll (1 row). Desktop: 4-col grid. -->
+              <div class="flex gap-2 overflow-x-auto pb-1
+                          md:grid md:grid-cols-4 md:gap-1.5 md:overflow-x-visible md:pb-0">
+                @for (cat of nonEmptyCategoryStats(); track cat.key; let i = $index) {
+                  <button
+                    class="flex-shrink-0 w-16
+                           md:flex-shrink md:w-auto
+                           relative flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-xl
+                           cursor-pointer transition-all duration-200 active:scale-90
+                           hover:scale-105 hover:-translate-y-0.5 hover:shadow-md
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-forest/40
+                           animate-pop-in group"
+                    [class]="catCardClass(cat.key)"
+                    [style.animationDelay]="(i * 30) + 'ms'"
+                    (click)="selectCategory(cat.key)"
+                  >
+                    <span class="text-lg leading-none transition-transform duration-200 group-hover:scale-125">{{ cat.emoji }}</span>
+                    <span class="text-[9px] font-semibold leading-tight text-center w-full px-0.5 capitalize line-clamp-2">
+                      {{ 'categories.' + cat.key | translate }}
+                    </span>
+                    <span
+                      class="absolute -top-1 -right-1 min-w-[14px] h-3.5 px-0.5 rounded-full
+                             text-[8px] font-bold flex items-center justify-center"
+                      [class]="catBadgeClass(cat.key)">
+                      {{ cat.count }}
+                    </span>
+                  </button>
                 }
               </div>
             }
-          </div>
-        </div>
+          </section>
 
-        <!-- Progress card -->
-        @if (stats().total > 0) {
-          <div class="bg-white dark:bg-dark-card rounded-2xl p-4 shadow-sm mb-4
-                      border border-gray-100/80 dark:border-gray-800/60">
-            <div class="flex items-center justify-between mb-2.5">
-              <span class="text-sm font-semibold text-charcoal dark:text-white">
-                {{ 'home.progress' | translate }}
-              </span>
-              <span
-                class="text-sm font-bold tabular-nums"
-                [class]="completionPct() === 100
-                  ? 'text-forest dark:text-sage'
-                  : 'text-orange-500'">
-                {{ completionPct() }}%
-              </span>
-            </div>
-            <div class="h-2.5 bg-gray-100 dark:bg-gray-700/80 rounded-full overflow-hidden">
-              <div
-                class="h-full rounded-full transition-all duration-700 ease-out"
-                [class]="completionPct() === 100
-                  ? 'bg-gradient-to-r from-forest to-sage'
-                  : 'bg-gradient-to-r from-orange-400 to-orange-500'"
-                [style.width.%]="completionPct()">
-              </div>
-            </div>
-            <p class="mt-2 text-xs text-gray-400 dark:text-gray-500">
-              {{ stats().purchased }}&nbsp;{{ 'home.of' | translate }}&nbsp;{{ stats().total }}&nbsp;{{ 'stats.items' | translate }}&nbsp;{{ 'home.purchased' | translate }}
-            </p>
-          </div>
-        }
+        </aside>
 
-        <!-- Stat cards -->
-        <div class="grid grid-cols-3 gap-3">
-          <!-- Total -->
-          <div
-            class="bg-forest rounded-2xl p-3.5 text-center shadow-md shadow-forest/20
-                   transition-transform duration-150 active:scale-95 animate-pop-in"
-            style="animation-delay: 0ms">
-            <p class="text-2xl font-bold text-white tabular-nums">{{ stats().total }}</p>
-            <p class="text-[11px] text-white/70 mt-0.5 font-medium">{{ 'stats.items' | translate }}</p>
-          </div>
+        <!-- ── MAIN: items list ──────────────────────────────────────────── -->
+        <main class="bg-cream dark:bg-dark-bg
+                     md:flex-1 md:overflow-y-auto md:overscroll-contain
+                     px-4 pt-4 pb-28 md:px-6 md:pt-5 md:pb-8">
 
-          <!-- Pending -->
-          <div
-            class="bg-amber-50 dark:bg-amber-900/20 rounded-2xl p-3.5 text-center shadow-sm
-                   border border-amber-100/80 dark:border-amber-800/30
-                   transition-transform duration-150 active:scale-95 animate-pop-in"
-            style="animation-delay: 60ms">
-            <p class="text-2xl font-bold text-amber-600 dark:text-amber-400 tabular-nums">{{ stats().pending }}</p>
-            <p class="text-[11px] text-amber-500/80 dark:text-amber-500/70 mt-0.5 font-medium">{{ 'stats.pending' | translate }}</p>
-          </div>
-
-          <!-- In Cart -->
-          <div
-            class="bg-sage/10 dark:bg-sage/15 rounded-2xl p-3.5 text-center shadow-sm
-                   border border-sage/20 dark:border-sage/20
-                   transition-transform duration-150 active:scale-95 animate-pop-in"
-            style="animation-delay: 120ms">
-            <p class="text-2xl font-bold text-sage tabular-nums">{{ stats().inCart }}</p>
-            <p class="text-[11px] text-sage/70 mt-0.5 font-medium">{{ 'stats.in_cart' | translate }}</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ── CATEGORY GRID ──────────────────────────────────────────────── -->
-      <section class="px-4 pt-5 pb-2">
-
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="font-bold text-charcoal dark:text-white text-base">
-            {{ 'home.categories' | translate }}
-          </h2>
-          @if (selectedCategory() !== 'all') {
-            <button
-              class="text-xs font-semibold text-orange-500 active:opacity-70 transition-opacity"
-              (click)="selectCategory('all')">
-              {{ 'home.clear_filter' | translate }}
-            </button>
-          }
-        </div>
-
-        <div class="grid grid-cols-4 gap-2">
-          @for (cat of categoryStats(); track cat.key; let i = $index) {
-            <button
-              class="relative flex flex-col items-center justify-center gap-1 py-3 px-1 rounded-2xl
-                     transition-all duration-200 active:scale-90 focus:outline-none focus-visible:ring-2
-                     focus-visible:ring-forest/40 animate-pop-in"
-              [class]="catCardClass(cat.key)"
-              [style.animationDelay]="(i * 30) + 'ms'"
-              (click)="selectCategory(cat.key)"
-            >
-              <span class="text-2xl leading-none">{{ cat.emoji }}</span>
-              <span class="text-[10px] font-semibold leading-tight text-center truncate w-full px-0.5 capitalize">
-                {{ 'categories.' + cat.key | translate }}
-              </span>
-              @if (cat.count > 0) {
-                <span
-                  class="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full
-                         text-[9px] font-bold flex items-center justify-center"
-                  [class]="catBadgeClass(cat.key)">
-                  {{ cat.count }}
-                </span>
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="font-bold text-charcoal dark:text-white text-base flex items-center gap-2 min-w-0">
+              @if (selectedCategory() !== 'all') {
+                <span class="text-lg leading-none flex-shrink-0">{{ activeCategoryEmoji() }}</span>
               }
-            </button>
-          }
-        </div>
-      </section>
+              <span class="truncate">{{ activeLabel() | titlecase }}</span>
+            </h2>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              @if (selectedCategory() !== 'all' || selectedStatus() !== 'all') {
+                <button
+                  class="text-xs font-semibold text-orange-500 cursor-pointer active:opacity-70 transition-opacity"
+                  (click)="clearFilters()">
+                  {{ 'home.clear_filter' | translate }}
+                </button>
+              }
 
-      <!-- ── ITEMS LIST ──────────────────────────────────────────────────── -->
-      <section class="px-4 pt-4 pb-28">
+              <!-- Sort cycle button -->
+              <button
+                class="flex items-center gap-1 text-xs font-semibold cursor-pointer transition-colors active:opacity-70"
+                [class]="sortBy() !== 'default'
+                  ? 'text-forest dark:text-sage'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'"
+                (click)="cycleSortBy()"
+                [attr.aria-label]="'home.sort.label' | translate"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"/>
+                </svg>
+                @if (sortBy() !== 'default') {
+                  <span>{{ ('home.sort.' + sortBy()) | translate }}</span>
+                }
+              </button>
 
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="font-bold text-charcoal dark:text-white text-base flex items-center gap-2">
-            @if (selectedCategory() !== 'all') {
-              <span class="text-lg leading-none">{{ activeCategoryEmoji() }}</span>
+              <!-- Compact view toggle -->
+              <button
+                class="w-7 h-7 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-150"
+                [class]="isCompact()
+                  ? 'bg-forest text-white shadow-sm'
+                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'"
+                (click)="isCompact.update(v => !v)"
+                [attr.aria-label]="(isCompact() ? 'home.compact.off' : 'home.compact.on') | translate"
+                [attr.aria-pressed]="isCompact()"
+              >
+                @if (isCompact()) {
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                  </svg>
+                } @else {
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M4 5h6v6H4V5zm10 0h6v6h-6V5zM4 15h6v6H4v-6zm10 0h6v6h-6v-6z"/>
+                  </svg>
+                }
+              </button>
+
+              <!-- Add item button — desktop only; mobile uses the FAB -->
+              <button
+                class="hidden md:flex relative overflow-hidden items-center gap-1.5
+                       px-4 py-1.5 rounded-xl
+                       bg-gradient-to-r from-orange-500 to-orange-600
+                       hover:from-orange-600 hover:to-orange-700
+                       text-white text-xs font-semibold
+                       shadow-md shadow-orange-500/30
+                       hover:shadow-lg hover:shadow-orange-500/40
+                       hover:scale-[1.04] active:scale-95
+                       transition-all duration-200 ease-out cursor-pointer group
+                       focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-1"
+                (click)="openForm(null)"
+                [attr.aria-label]="'item.add' | translate"
+              >
+                <!-- shimmer sweep on hover -->
+                <span class="pointer-events-none absolute inset-0 -skew-x-12
+                             bg-gradient-to-r from-transparent via-white/25 to-transparent
+                             -translate-x-full group-hover:translate-x-full
+                             transition-transform duration-500 ease-out"></span>
+                <svg class="w-3.5 h-3.5 flex-shrink-0 transition-transform duration-300 group-hover:rotate-90"
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                {{ 'item.add' | translate }}
+              </button>
+
+              <span class="text-xs font-medium text-gray-500 dark:text-gray-400 tabular-nums">
+                {{ filteredItems().length }}&nbsp;{{ 'stats.items' | translate }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Search bar -->
+          <div class="mb-3 relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500 pointer-events-none"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+            </svg>
+            <input
+              type="search"
+              autocomplete="off"
+              class="w-full pl-9 py-2.5 rounded-xl text-sm
+                     bg-white dark:bg-dark-card
+                     border border-gray-200 dark:border-gray-700/80
+                     text-charcoal dark:text-white
+                     placeholder:text-gray-400 dark:placeholder:text-gray-500
+                     focus:outline-none focus:ring-2 focus:ring-forest/30 focus:border-forest/40
+                     transition-all duration-150"
+              [class]="searchQuery() ? 'pr-8' : 'pr-3'"
+              [placeholder]="'home.search.placeholder' | translate"
+              [value]="searchQuery()"
+              (input)="searchQuery.set($any($event.target).value)"
+            />
+            @if (searchQuery()) {
+              <button
+                class="absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full
+                       flex items-center justify-center cursor-pointer
+                       text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-200
+                       hover:bg-gray-100 dark:hover:bg-gray-700
+                       transition-all duration-150"
+                (click)="searchQuery.set('')"
+                [attr.aria-label]="'home.search.clear' | translate"
+              >
+                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
             }
-            {{ activeLabel() | titlecase }}
-          </h2>
-          <span class="text-xs font-medium text-gray-400 dark:text-gray-500 tabular-nums">
-            {{ filteredItems().length }}&nbsp;{{ 'stats.items' | translate }}
-          </span>
-        </div>
+          </div>
 
-        <app-item-list
-          [items]="filteredItems()"
-          (edit)="openForm($event)"
-          (delete)="onDelete($event)"
-          (statusChange)="onStatusChange($event)"
-        />
-      </section>
+          <!-- No search results -->
+          @if (searchQuery() && filteredItems().length === 0) {
+            <div class="flex flex-col items-center justify-center py-16 gap-3 animate-fade-in">
+              <span class="text-4xl">🔍</span>
+              <div class="text-center">
+                <p class="text-sm font-semibold text-charcoal dark:text-white">
+                  {{ 'home.search.empty' | translate:{ q: searchQuery() } }}
+                </p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {{ 'home.search.empty_hint' | translate }}
+                </p>
+              </div>
+              <button
+                class="mt-1 px-4 py-1.5 rounded-lg text-xs font-semibold
+                       bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300
+                       hover:bg-gray-200 dark:hover:bg-gray-700
+                       transition-all duration-150 cursor-pointer"
+                (click)="searchQuery.set('')">
+                {{ 'home.search.clear' | translate }}
+              </button>
+            </div>
+          } @else {
+            <app-item-list
+              [items]="filteredItems()"
+              [compact]="isCompact()"
+              (edit)="openForm($event)"
+              (delete)="onDelete($event)"
+              (statusChange)="onStatusChange($event)"
+            />
+          }
+
+        </main>
+
+      </div>
 
       <!-- ── HELP BUTTON ───────────────────────────────────────────────── -->
       <button
-        class="fixed bottom-6 left-5 w-11 h-11 rounded-full z-40
+        class="fixed bottom-6 left-5 w-11 h-11 rounded-full z-40 cursor-pointer
                bg-white dark:bg-dark-card shadow-md
-               text-gray-400 dark:text-gray-500
-               hover:text-forest dark:hover:text-sage hover:shadow-lg
+               text-gray-500 dark:text-gray-400
+               hover:text-forest dark:hover:text-sage hover:shadow-lg hover:scale-110
                flex items-center justify-center
-               active:scale-90 transition-all duration-200"
+               active:scale-90 transition-all duration-200
+               animate-float"
         (click)="openHelp()"
         [attr.aria-label]="'help.open' | translate"
       >
@@ -311,18 +433,25 @@ interface CategoryStat {
         </svg>
       </button>
 
-      <!-- ── FAB ───────────────────────────────────────────────────────── -->
+      <!-- ── FAB (mobile only) ────────────────────────────────────────── -->
       <button
-        class="fixed bottom-6 right-5 w-14 h-14 rounded-full
-               bg-orange-500 hover:bg-orange-600 active:scale-90
-               text-white shadow-lg shadow-orange-500/40
+        class="md:hidden fixed bottom-6 right-5 z-40
+               w-14 h-14 rounded-2xl
+               bg-gradient-to-br from-orange-400 to-orange-600
+               hover:from-orange-500 hover:to-orange-700
+               text-white
+               shadow-xl shadow-orange-500/50
+               hover:shadow-2xl hover:shadow-orange-600/60
+               hover:scale-110 active:scale-90
                flex items-center justify-center
-               transition-all duration-200 z-40 group"
+               transition-all duration-200 ease-out
+               cursor-pointer group
+               focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-2"
         (click)="openForm(null)"
         [attr.aria-label]="'item.add' | translate"
       >
         <svg
-          class="w-7 h-7 transition-transform duration-300 group-active:rotate-45"
+          class="w-6 h-6 transition-transform duration-300 ease-out group-hover:rotate-90"
           fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
         </svg>
@@ -332,6 +461,7 @@ interface CategoryStat {
       @if (showForm()) {
         <app-item-form
           [item]="editingItem()"
+          [defaultCategory]="activeFilterCategory()"
           (save)="onSave($event)"
           (close)="closeForm()"
         />
@@ -345,8 +475,16 @@ interface CategoryStat {
   `,
 })
 export class HomePageComponent {
-  private readonly data  = inject(DataService);
-  private readonly toast = inject(ToastService);
+  private readonly data      = inject(DataService);
+  private readonly toast     = inject(ToastService);
+  private readonly translate = inject(TranslateService);
+
+  // Drives re-evaluation of computed signals that call translate.instant()
+  // whenever the active language changes.
+  private readonly lang = toSignal(
+    this.translate.onLangChange.pipe(map(e => e.lang)),
+    { initialValue: this.translate.currentLang ?? 'en' },
+  );
 
   // ── Data ──────────────────────────────────────────────────────────────────
 
@@ -355,9 +493,24 @@ export class HomePageComponent {
 
   readonly greeting = computed(() => {
     const h = new Date().getHours();
-    if (h < 12) return { text: 'Good morning', emoji: '☀️' };
-    if (h < 18) return { text: 'Good afternoon', emoji: '🌤️' };
-    return { text: 'Good evening', emoji: '🌙' };
+    if (h < 12) return {
+      key: 'home.greeting.morning',
+      emoji: '☀️',
+      bgClass:   'bg-amber-100 dark:bg-amber-900/30',
+      glowClass: 'bg-amber-400 dark:bg-amber-500',
+    };
+    if (h < 18) return {
+      key: 'home.greeting.afternoon',
+      emoji: '🌤️',
+      bgClass:   'bg-sky-100 dark:bg-sky-900/30',
+      glowClass: 'bg-sky-400 dark:bg-sky-500',
+    };
+    return {
+      key: 'home.greeting.evening',
+      emoji: '🌙',
+      bgClass:   'bg-indigo-100 dark:bg-indigo-900/30',
+      glowClass: 'bg-indigo-400 dark:bg-indigo-500',
+    };
   });
 
   readonly completionPct = computed(() => {
@@ -375,54 +528,46 @@ export class HomePageComponent {
     }));
   });
 
-  // ── Notifications ─────────────────────────────────────────────────────────
-
-  readonly showNotifications = signal(false);
-
-  // Derived from the global items signal — updates reactively whenever an
-  // item's status changes, keeping the panel list in sync without extra state.
-  readonly pendingItems = computed<Item[]>(() =>
-    this.data.items().filter(i => i.status === 'pending')
+  // Only categories that actually have items — avoids cluttering the sidebar
+  // with empty slots that add no value as filters.
+  readonly nonEmptyCategoryStats = computed(() =>
+    this.categoryStats().filter(c => c.count > 0)
   );
 
-  toggleNotifications(): void {
-    this.showNotifications.update(v => !v);
-  }
-
-  closeNotifications(): void {
-    this.showNotifications.set(false);
-  }
-
-  moveToCart(id: string): void {
-    this.data.cycleStatus(id); // pending → in_cart (first step of STATUS_CYCLE)
-  }
-
-  markAllInCart(): void {
-    // Snapshot the pending list before cycling — cycleStatus mutates the signal,
-    // which would shorten the array mid-iteration if we iterated over the live
-    // computed. The forEach here iterates over the captured array, not the signal.
-    this.pendingItems().forEach(item => this.data.cycleStatus(item.id));
-    this.closeNotifications();
-    this.toast.show('toast.all_in_cart');
-  }
-
-  categoryEmoji(item: Item): string {
-    return CATEGORY_CONFIG[item.category].emoji;
-  }
-
-  // ── Category filter ───────────────────────────────────────────────────────
+  // ── Filters & sort ────────────────────────────────────────────────────────
 
   readonly selectedCategory = signal<ItemCategory | 'all'>('all');
+  readonly selectedStatus   = signal<ItemStatus | 'all'>('all');
+  readonly sortBy           = signal<'default' | 'name' | 'category'>('default');
+  readonly searchQuery      = signal('');
+  readonly isCompact        = signal(false);
 
   readonly filteredItems = computed<Item[]>(() => {
-    const cat = this.selectedCategory();
-    const items = this.data.items();
-    return cat === 'all' ? items : items.filter(i => i.category === cat);
+    const cat    = this.selectedCategory();
+    const status = this.selectedStatus();
+    const sort   = this.sortBy();
+    const query  = this.searchQuery().trim().toLowerCase();
+
+    let items = this.data.items().filter(i =>
+      (cat    === 'all' || i.category === cat) &&
+      (status === 'all' || i.status   === status) &&
+      (query  === ''    || i.name.toLowerCase().includes(query))
+    );
+
+    if (sort === 'name')     items = [...items].sort((a, b) => a.name.localeCompare(b.name));
+    if (sort === 'category') items = [...items].sort((a, b) => a.category.localeCompare(b.category));
+
+    return items;
   });
 
   readonly activeLabel = computed(() => {
-    const cat = this.selectedCategory();
-    return cat === 'all' ? 'All items' : cat;
+    this.lang(); // reactive dependency — re-runs on language change
+    const cat    = this.selectedCategory();
+    const status = this.selectedStatus();
+    const catLabel    = cat    !== 'all' ? this.translate.instant('categories.' + cat)    : null;
+    const statusLabel = status !== 'all' ? this.translate.instant('filters.' + status)    : null;
+    if (catLabel && statusLabel) return `${catLabel} · ${statusLabel}`;
+    return catLabel ?? statusLabel ?? this.translate.instant('home.title');
   });
 
   readonly activeCategoryEmoji = computed(() => {
@@ -430,13 +575,31 @@ export class HomePageComponent {
     return cat !== 'all' ? CATEGORY_CONFIG[cat].emoji : '';
   });
 
-  /**
-   * Tapping the already-active category deselects it (shows all items).
-   * This toggle behaviour avoids needing a separate "clear filter" tap for
-   * the common case of undoing the last selection.
-   */
+  /** Returns the active category filter, or null if none is selected. */
+  readonly activeFilterCategory = computed<ItemCategory | null>(() => {
+    const cat = this.selectedCategory();
+    return cat !== 'all' ? cat : null;
+  });
+
+  /** Tapping the active category again deselects it (toggle). */
   selectCategory(key: ItemCategory | 'all'): void {
     this.selectedCategory.set(this.selectedCategory() === key ? 'all' : key);
+  }
+
+  /** Tapping the active status card again deselects it (toggle). */
+  selectStatus(status: ItemStatus | 'all'): void {
+    this.selectedStatus.set(this.selectedStatus() === status ? 'all' : status);
+  }
+
+  clearFilters(): void {
+    this.selectedCategory.set('all');
+    this.selectedStatus.set('all');
+  }
+
+  cycleSortBy(): void {
+    const order = ['default', 'name', 'category'] as const;
+    const next = order[(order.indexOf(this.sortBy()) + 1) % order.length];
+    this.sortBy.set(next);
   }
 
   // ── Category card classes ─────────────────────────────────────────────────
@@ -451,6 +614,32 @@ export class HomePageComponent {
     return this.selectedCategory() === key
       ? 'bg-orange-400 text-white'
       : 'bg-forest text-white';
+  }
+
+  // ── Stat card classes ─────────────────────────────────────────────────────
+
+  statTotalClass(): string {
+    return this.selectedStatus() === 'all'
+      ? 'bg-forest shadow-md shadow-forest/20'
+      : 'bg-forest/50 dark:bg-forest/40 shadow-sm';
+  }
+
+  statPendingClass(): string {
+    const sel = this.selectedStatus();
+    if (sel === 'pending')
+      return 'bg-amber-400 shadow-md shadow-amber-400/25';
+    if (sel === 'all')
+      return 'bg-amber-50 dark:bg-amber-900/20 border border-amber-100/80 dark:border-amber-800/30 shadow-sm';
+    return 'bg-amber-50/50 dark:bg-amber-900/10 border border-amber-100/40 dark:border-amber-800/10 shadow-sm opacity-50 scale-95';
+  }
+
+  statInCartClass(): string {
+    const sel = this.selectedStatus();
+    if (sel === 'in_cart')
+      return 'bg-sage shadow-md shadow-sage/25';
+    if (sel === 'all')
+      return 'bg-sage/10 dark:bg-sage/15 border border-sage/20 shadow-sm';
+    return 'bg-sage/5 dark:bg-sage/10 border border-sage/10 shadow-sm opacity-50 scale-95';
   }
 
   // ── Form ──────────────────────────────────────────────────────────────────
@@ -481,12 +670,25 @@ export class HomePageComponent {
   }
 
   onDelete(id: string): void {
+    const item = this.data.items().find(i => i.id === id);
+    if (!item) return;
     this.data.deleteItem(id);
-    this.toast.show('toast.deleted', 'info');
+    this.toast.show('toast.deleted', 'info', {
+      action: { label: 'item.undo', fn: () => this.data.restoreItem(item) },
+    });
   }
 
   onStatusChange(id: string): void {
     this.data.cycleStatus(id);
+  }
+
+  onClearPurchased(): void {
+    const purchased = this.data.items().filter(i => i.status === 'purchased');
+    if (purchased.length === 0) return;
+    this.data.clearPurchased();
+    this.toast.show('toast.purchased_cleared', 'info', {
+      action: { label: 'item.undo', fn: () => this.data.restoreItems(purchased) },
+    });
   }
 
   // ── Help tour ─────────────────────────────────────────────────────────────
