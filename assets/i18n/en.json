@@ -53,9 +53,10 @@
   "toast.deleted": "Item removed.",
   "item.undo": "Undo",
 
-  "stats.items": "items",
+  "stats.items": "Items",
   "stats.pending": "pending",
-  "stats.in_cart": "in cart",
+  "stats.in_cart": "In Cart",
+  "stats.purchased": "purchased",
 
   "empty.title": "Your pantry is empty",
   "empty.subtitle": "Tap + to add your first item",
@@ -94,6 +95,13 @@
   "toast.all_in_cart": "All items moved to cart!",
   "toast.purchased_cleared": "Purchased items cleared.",
   "home.clear_purchased": "Clear purchased",
+
+  "confirm.title_delete": "Delete item?",
+  "confirm.title_clear":  "Clear purchased?",
+  "confirm.msg_delete":   "\"{{name}}\" will be permanently removed.",
+  "confirm.msg_clear":    "{{count}} purchased item(s) will be removed.",
+  "confirm.delete":       "Delete",
+  "confirm.clear":        "Clear all",
 
   "help.open":        "Open help",
   "help.close":       "Close",

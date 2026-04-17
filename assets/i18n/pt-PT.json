@@ -53,9 +53,10 @@
   "toast.deleted": "Item removido.",
   "item.undo": "Desfazer",
 
-  "stats.items": "itens",
+  "stats.items": "Itens",
   "stats.pending": "pendentes",
   "stats.in_cart": "Carrinho",
+  "stats.purchased": "comprados",
 
   "empty.title": "A sua despensa está vazia",
   "empty.subtitle": "Toque em + para adicionar o primeiro item",
@@ -94,6 +95,13 @@
   "toast.all_in_cart": "Todos os itens movidos para o carrinho!",
   "toast.purchased_cleared": "Itens comprados eliminados.",
   "home.clear_purchased": "Limpar comprados",
+
+  "confirm.title_delete": "Eliminar item?",
+  "confirm.title_clear":  "Limpar comprados?",
+  "confirm.msg_delete":   "\"{{name}}\" será eliminado permanentemente.",
+  "confirm.msg_clear":    "{{count}} item(s) comprado(s) serão removidos.",
+  "confirm.delete":       "Eliminar",
+  "confirm.clear":        "Limpar tudo",
 
   "help.open":        "Abrir ajuda",
   "help.close":       "Fechar",
