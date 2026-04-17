@@ -15,19 +15,7 @@ const LANG_META: Record<string, { label: string; flag: string }> = {
   selector: 'app-language-switcher',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <button
-      class="w-9 h-9 rounded-2xl flex items-center justify-center gap-0.5
-             bg-white dark:bg-dark-card shadow-sm cursor-pointer
-             hover:bg-gray-50 dark:hover:bg-gray-800 hover:shadow-md hover:scale-105
-             active:scale-90 transition-all duration-200
-             focus:outline-none focus-visible:ring-2 focus-visible:ring-forest/40"
-      (click)="toggle()"
-      [attr.aria-label]="meta(nextLang()).label"
-    >
-      <span class="text-base leading-none">{{ meta(activeLang()).flag }}</span>
-    </button>
-  `,
+  templateUrl: './language-switcher.component.html',
 })
 export class LanguageSwitcherComponent {
   private readonly translate = inject(TranslateService);
