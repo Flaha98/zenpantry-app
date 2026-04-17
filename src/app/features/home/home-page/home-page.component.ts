@@ -12,6 +12,7 @@ import { Item, ItemCategory, ItemStatus, CATEGORIES, CATEGORY_CONFIG } from '../
 import { ItemListComponent } from '../../pantry/item-list/item-list.component';
 import { ItemFormComponent, ItemFormPayload } from '../../pantry/item-form/item-form.component';
 import { HelpTourComponent } from '../../../shared/components/help-tour/help-tour.component';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 interface CategoryStat {
   key: ItemCategory;
@@ -20,10 +21,14 @@ interface CategoryStat {
   pendingCount: number;
 }
 
+type PendingDelete =
+  | { type: 'item'; id: string; name: string }
+  | { type: 'clear'; count: number };
+
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [TranslatePipe, TitleCasePipe, ItemListComponent, ItemFormComponent, HelpTourComponent],
+  imports: [TranslatePipe, TitleCasePipe, ItemListComponent, ItemFormComponent, HelpTourComponent, ConfirmDialogComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="bg-cream dark:bg-dark-bg">
@@ -36,8 +41,8 @@ interface CategoryStat {
         The inner wrapper is fixed below the header on desktop so both
         columns scroll independently without a double-scrollbar.
       -->
-      <div class="pt-16 min-h-dvh
-                  md:fixed md:inset-x-0 md:top-16 md:bottom-0 md:pt-0
+      <div class="min-h-dvh
+                  md:fixed md:inset-x-0 md:top-16 md:bottom-0
                   md:flex md:overflow-hidden">
 
         <!-- ── SIDEBAR: greeting · stats · categories ─────────────────── -->
@@ -216,32 +221,40 @@ interface CategoryStat {
               </p>
             } @else {
               <!-- Mobile: horizontal scroll (1 row). Desktop: 4-col grid. -->
-              <div class="flex gap-2 overflow-x-auto pb-1
-                          md:grid md:grid-cols-4 md:gap-1.5 md:overflow-x-visible md:pb-0">
+              <!-- overflow-hidden while confirm dialog is open removes the mobile
+                   overlay scrollbar, which composites above CSS z-index layers. -->
+              <div class="flex gap-2 pt-2 pb-1
+                          md:grid md:grid-cols-4 md:gap-1.5 md:overflow-x-visible md:pt-2 md:pb-0"
+                   [class]="pendingDelete() ? 'overflow-hidden' : 'overflow-x-auto'">
                 @for (cat of nonEmptyCategoryStats(); track cat.key; let i = $index) {
-                  <button
-                    class="flex-shrink-0 w-16
-                           md:flex-shrink md:w-auto
-                           relative flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-xl
-                           cursor-pointer transition-all duration-200 active:scale-90
-                           hover:scale-105 hover:-translate-y-0.5 hover:shadow-md
-                           focus:outline-none focus-visible:ring-2 focus-visible:ring-forest/40
-                           animate-pop-in group"
-                    [class]="catCardClass(cat.key)"
+                  <div
+                    class="relative flex-shrink-0 w-16 md:flex-shrink md:w-auto
+                           animate-pop-in"
                     [style.animationDelay]="(i * 30) + 'ms'"
-                    (click)="selectCategory(cat.key)"
                   >
-                    <span class="text-lg leading-none transition-transform duration-200 group-hover:scale-125">{{ cat.emoji }}</span>
-                    <span class="text-[9px] font-semibold leading-tight text-center w-full px-0.5 capitalize line-clamp-2">
-                      {{ 'categories.' + cat.key | translate }}
-                    </span>
+                    <!-- Count badge floats above the card -->
                     <span
-                      class="absolute -top-1 -right-1 min-w-[14px] h-3.5 px-0.5 rounded-full
-                             text-[8px] font-bold flex items-center justify-center"
+                      class="absolute -top-2 -right-1 z-10
+                             min-w-[16px] h-4 px-1 rounded-full
+                             text-[8px] font-bold flex items-center justify-center shadow-sm"
                       [class]="catBadgeClass(cat.key)">
                       {{ cat.count }}
                     </span>
-                  </button>
+                    <button
+                      class="w-full flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-xl
+                             cursor-pointer transition-all duration-200 active:scale-90
+                             hover:scale-105 hover:-translate-y-0.5 hover:shadow-md
+                             focus:outline-none focus-visible:ring-2 focus-visible:ring-forest/40
+                             group"
+                      [class]="catCardClass(cat.key)"
+                      (click)="selectCategory(cat.key)"
+                    >
+                      <span class="text-lg leading-none transition-transform duration-200 group-hover:scale-125">{{ cat.emoji }}</span>
+                      <span class="text-[9px] font-semibold leading-tight text-center w-full px-0.5 capitalize line-clamp-2">
+                        {{ 'categories.' + cat.key | translate }}
+                      </span>
+                    </button>
+                  </div>
                 }
               </div>
             }
@@ -314,11 +327,12 @@ interface CategoryStat {
                 class="hidden md:flex relative overflow-hidden items-center gap-1.5
                        px-4 py-1.5 rounded-xl
                        bg-gradient-to-r from-orange-500 to-orange-600
-                       hover:from-orange-600 hover:to-orange-700
+                       hover:from-orange-400 hover:to-orange-500
                        text-white text-xs font-semibold
                        shadow-md shadow-orange-500/30
-                       hover:shadow-lg hover:shadow-orange-500/40
-                       hover:scale-[1.04] active:scale-95
+                       hover:shadow-lg hover:shadow-orange-500/50
+                       hover:scale-[1.06] hover:-translate-y-0.5
+                       active:scale-95 active:translate-y-0
                        transition-all duration-200 ease-out cursor-pointer group
                        focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 focus-visible:ring-offset-1"
                 (click)="openForm(null)"
@@ -326,14 +340,16 @@ interface CategoryStat {
               >
                 <!-- shimmer sweep on hover -->
                 <span class="pointer-events-none absolute inset-0 -skew-x-12
-                             bg-gradient-to-r from-transparent via-white/25 to-transparent
+                             bg-gradient-to-r from-transparent via-white/30 to-transparent
                              -translate-x-full group-hover:translate-x-full
                              transition-transform duration-500 ease-out"></span>
-                <svg class="w-3.5 h-3.5 flex-shrink-0 transition-transform duration-300 group-hover:rotate-90"
+                <svg class="relative z-10 w-3.5 h-3.5 flex-shrink-0
+                            transition-all duration-300 ease-out
+                            group-hover:rotate-90 group-hover:scale-110"
                      fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
-                {{ 'item.add' | translate }}
+                <span class="relative z-10">{{ 'item.add' | translate }}</span>
               </button>
 
               <span class="text-xs font-medium text-gray-500 dark:text-gray-400 tabular-nums">
@@ -436,13 +452,15 @@ interface CategoryStat {
       <!-- ── FAB (mobile only) ────────────────────────────────────────── -->
       <button
         class="md:hidden fixed bottom-6 right-5 z-40
-               w-14 h-14 rounded-2xl
-               bg-gradient-to-br from-orange-400 to-orange-600
-               hover:from-orange-500 hover:to-orange-700
+               w-14 h-14 rounded-2xl overflow-hidden
+               bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600
+               hover:from-orange-300 hover:via-orange-400 hover:to-orange-600
                text-white
                shadow-xl shadow-orange-500/50
-               hover:shadow-2xl hover:shadow-orange-600/60
-               hover:scale-110 active:scale-90
+               hover:shadow-2xl hover:shadow-orange-600/70
+               hover:scale-[1.15] hover:-translate-y-1
+               active:scale-[0.88] active:translate-y-0
+               animate-float
                flex items-center justify-center
                transition-all duration-200 ease-out
                cursor-pointer group
@@ -450,8 +468,16 @@ interface CategoryStat {
         (click)="openForm(null)"
         [attr.aria-label]="'item.add' | translate"
       >
+        <!-- shimmer sweep on hover -->
+        <span class="pointer-events-none absolute inset-0 -skew-x-12
+                     bg-gradient-to-r from-transparent via-white/30 to-transparent
+                     -translate-x-full group-hover:translate-x-full
+                     transition-transform duration-500 ease-out"></span>
         <svg
-          class="w-6 h-6 transition-transform duration-300 ease-out group-hover:rotate-90"
+          class="relative z-10 w-6 h-6
+                 transition-all duration-300 ease-out
+                 group-hover:rotate-90 group-hover:scale-110
+                 group-active:scale-90"
           fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
         </svg>
@@ -470,6 +496,18 @@ interface CategoryStat {
       <!-- ── HELP TOUR ─────────────────────────────────────────────────── -->
       @if (showHelp()) {
         <app-help-tour (close)="closeHelp()" />
+      }
+
+      <!-- ── CONFIRM DELETE DIALOG ─────────────────────────────────────── -->
+      @if (pendingDelete()) {
+        <app-confirm-dialog
+          [titleKey]="confirmTitleKey()"
+          [messageKey]="confirmMsgKey()"
+          [messageParams]="confirmMsgParams()"
+          [confirmKey]="confirmActionKey()"
+          (confirm)="confirmDelete()"
+          (cancel)="cancelDelete()"
+        />
       }
     </div>
   `,
@@ -669,26 +707,67 @@ export class HomePageComponent {
     this.closeForm();
   }
 
-  onDelete(id: string): void {
-    const item = this.data.items().find(i => i.id === id);
-    if (!item) return;
-    this.data.deleteItem(id);
-    this.toast.show('toast.deleted', 'info', {
-      action: { label: 'item.undo', fn: () => this.data.restoreItem(item) },
-    });
-  }
-
   onStatusChange(id: string): void {
     this.data.cycleStatus(id);
   }
 
+  // ── Confirm delete ────────────────────────────────────────────────────────
+
+  readonly pendingDelete = signal<PendingDelete | null>(null);
+
+  readonly confirmTitleKey = computed(() =>
+    this.pendingDelete()?.type === 'clear' ? 'confirm.title_clear' : 'confirm.title_delete'
+  );
+
+  readonly confirmMsgKey = computed(() =>
+    this.pendingDelete()?.type === 'clear' ? 'confirm.msg_clear' : 'confirm.msg_delete'
+  );
+
+  readonly confirmMsgParams = computed<Record<string, unknown>>(() => {
+    const p = this.pendingDelete();
+    if (!p) return {};
+    return p.type === 'item' ? { name: p.name } : { count: p.count };
+  });
+
+  readonly confirmActionKey = computed(() =>
+    this.pendingDelete()?.type === 'clear' ? 'confirm.clear' : 'confirm.delete'
+  );
+
+  onDelete(id: string): void {
+    const item = this.data.items().find(i => i.id === id);
+    if (!item) return;
+    this.pendingDelete.set({ type: 'item', id, name: item.name });
+  }
+
   onClearPurchased(): void {
-    const purchased = this.data.items().filter(i => i.status === 'purchased');
-    if (purchased.length === 0) return;
-    this.data.clearPurchased();
-    this.toast.show('toast.purchased_cleared', 'info', {
-      action: { label: 'item.undo', fn: () => this.data.restoreItems(purchased) },
-    });
+    const count = this.data.items().filter(i => i.status === 'purchased').length;
+    if (count === 0) return;
+    this.pendingDelete.set({ type: 'clear', count });
+  }
+
+  confirmDelete(): void {
+    const p = this.pendingDelete();
+    if (!p) return;
+    if (p.type === 'item') {
+      const item = this.data.items().find(i => i.id === p.id);
+      if (item) {
+        this.data.deleteItem(p.id);
+        this.toast.show('toast.deleted', 'info', {
+          action: { label: 'item.undo', fn: () => this.data.restoreItem(item) },
+        });
+      }
+    } else {
+      const purchased = this.data.items().filter(i => i.status === 'purchased');
+      this.data.clearPurchased();
+      this.toast.show('toast.purchased_cleared', 'info', {
+        action: { label: 'item.undo', fn: () => this.data.restoreItems(purchased) },
+      });
+    }
+    this.pendingDelete.set(null);
+  }
+
+  cancelDelete(): void {
+    this.pendingDelete.set(null);
   }
 
   // ── Help tour ─────────────────────────────────────────────────────────────
