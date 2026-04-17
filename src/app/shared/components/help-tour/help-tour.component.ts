@@ -288,36 +288,58 @@ const SLIDES: HelpSlide[] = [
                 </div>
               }
 
-              <!-- Step 6: Customize — theme toggle + language buttons -->
+              <!-- Step 6: Language + theme — grouped by function, not by mode -->
               @case (5) {
                 <div class="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-teal-300/40 dark:bg-teal-500/20 blur-xl"></div>
-                <div class="flex flex-col items-center gap-3 z-10">
-                  <div class="flex items-center gap-3 bg-white/80 dark:bg-white/10 rounded-2xl px-4 py-2.5 shadow-sm">
-                    <div class="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
-                      <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <div class="flex flex-col gap-2.5 z-10">
+
+                  <!-- Row 1: Language -->
+                  <div class="flex items-center gap-2 bg-white/70 dark:bg-white/10 rounded-2xl px-3.5 py-2 shadow-sm">
+                    <span class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide w-10 flex-shrink-0">Lang</span>
+                    <!-- 🇬🇧 button -->
+                    <div class="w-9 h-9 rounded-2xl bg-white dark:bg-white/15 shadow-sm
+                                border border-gray-100/80 dark:border-white/10
+                                flex items-center justify-center">
+                      <span class="text-base leading-none">🇬🇧</span>
+                    </div>
+                    <!-- swap arrow -->
+                    <svg class="w-3.5 h-3.5 text-gray-400/60 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                    </svg>
+                    <!-- 🇵🇹 button -->
+                    <div class="w-9 h-9 rounded-2xl bg-white dark:bg-white/15 shadow-sm
+                                border border-gray-100/80 dark:border-white/10
+                                flex items-center justify-center">
+                      <span class="text-base leading-none">🇵🇹</span>
+                    </div>
+                  </div>
+
+                  <!-- Row 2: Theme -->
+                  <div class="flex items-center gap-2 bg-white/70 dark:bg-white/10 rounded-2xl px-3.5 py-2 shadow-sm">
+                    <span class="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide w-10 flex-shrink-0">Theme</span>
+                    <!-- Moon button (shown in light mode) -->
+                    <div class="w-9 h-9 rounded-2xl bg-white dark:bg-white/15 shadow-sm
+                                border border-gray-100/80 dark:border-white/10
+                                flex items-center justify-center">
+                      <svg class="w-[15px] h-[15px] text-indigo-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9 9 0 008.354-5.646z"/>
+                      </svg>
+                    </div>
+                    <!-- swap arrow -->
+                    <svg class="w-3.5 h-3.5 text-gray-400/60 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                    </svg>
+                    <!-- Sun button (shown in dark mode) -->
+                    <div class="w-9 h-9 rounded-2xl bg-white dark:bg-white/15 shadow-sm
+                                border border-gray-100/80 dark:border-white/10
+                                flex items-center justify-center">
+                      <svg class="w-[15px] h-[15px] text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round"
                           d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
                       </svg>
                     </div>
-                    <div class="w-11 h-6 rounded-full bg-forest relative shadow-inner">
-                      <div class="absolute right-0.5 top-0.5 w-5 h-5 rounded-full bg-white shadow-sm"></div>
-                    </div>
-                    <div class="w-8 h-8 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
-                      <svg class="w-4 h-4 text-indigo-400" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9 9 0 008.354-5.646z"/>
-                      </svg>
-                    </div>
                   </div>
-                  <div class="flex items-center gap-2">
-                    <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-forest shadow-lg shadow-forest/30">
-                      <span class="text-base leading-none">🇬🇧</span>
-                      <span class="text-[11px] font-bold text-white">EN</span>
-                    </div>
-                    <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/70 dark:bg-white/10 shadow-sm">
-                      <span class="text-base leading-none">🇵🇹</span>
-                      <span class="text-[11px] font-semibold text-charcoal dark:text-white/80">PT</span>
-                    </div>
-                  </div>
+
                 </div>
               }
 
