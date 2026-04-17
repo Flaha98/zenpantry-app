@@ -13,12 +13,16 @@
   "filters.purchased": "Purchased",
 
   "categories.fruits": "Fruits",
-  "categories.vegetables": "Vegetables",
+  "categories.vegetables": "Veggies",
   "categories.dairy": "Dairy",
   "categories.meat": "Meat",
   "categories.bakery": "Bakery",
+  "categories.frozen": "Frozen",
+  "categories.pantry": "Staples",
+  "categories.snacks": "Snacks",
   "categories.beverages": "Beverages",
   "categories.cleaning": "Cleaning",
+  "categories.personal_care": "Personal Care",
   "categories.other": "Other",
 
   "units.unit": "unit",
@@ -47,6 +51,7 @@
   "toast.added": "Item added!",
   "toast.updated": "Item updated!",
   "toast.deleted": "Item removed.",
+  "item.undo": "Undo",
 
   "stats.items": "items",
   "stats.pending": "pending",
@@ -56,6 +61,8 @@
   "empty.subtitle": "Tap + to add your first item",
 
   "validation.name_required": "Name is required",
+  "validation.integer_required": "Must be a whole number",
+  "validation.min_value": "Must be greater than 0",
 
   "home.title": "Your Pantry",
   "home.notifications": "Notifications",
@@ -64,11 +71,29 @@
   "home.purchased": "purchased",
   "home.categories": "Categories",
   "home.clear_filter": "Clear",
+  "home.all_done": "All done!",
+  "home.greeting.morning": "Good morning",
+  "home.greeting.afternoon": "Good afternoon",
+  "home.greeting.evening": "Good evening",
+  "home.sort.label": "Sort",
+  "home.sort.default": "Default",
+  "home.sort.name": "A–Z",
+  "home.sort.category": "Category",
+
+  "home.search.placeholder": "Search items…",
+  "home.search.clear": "Clear search",
+  "home.search.empty": "No results for \"{{q}}\"",
+  "home.search.empty_hint": "Try a different name or clear the search",
+  "home.compact.on": "Compact view",
+  "home.compact.off": "Normal view",
+  "item.purchased_section": "Purchased · {{count}}",
 
   "home.notif.empty": "All done, nothing pending!",
   "home.notif.mark_all": "Move all to Cart",
 
   "toast.all_in_cart": "All items moved to cart!",
+  "toast.purchased_cleared": "Purchased items cleared.",
+  "home.clear_purchased": "Clear purchased",
 
   "help.open":        "Open help",
   "help.close":       "Close",
