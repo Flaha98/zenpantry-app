@@ -25,8 +25,7 @@ const LANG_META: Record<string, { label: string; flag: string }> = {
       (click)="toggle()"
       [attr.aria-label]="meta(nextLang()).label"
     >
-      <span class="text-sm leading-none">{{ meta(activeLang()).flag }}</span>
-      <span class="text-[10px] font-bold text-charcoal dark:text-white leading-none">{{ meta(activeLang()).label }}</span>
+      <span class="text-base leading-none">{{ meta(activeLang()).flag }}</span>
     </button>
   `,
 })
