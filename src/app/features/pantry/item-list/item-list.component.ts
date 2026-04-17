@@ -58,11 +58,8 @@ import { Item, CATEGORY_CONFIG, STATUS_CONFIG } from '../../../core/models/item.
                   }
                 </div>
               </div>
+              <!-- Right: edit/delete (hover on desktop, always on mobile) then status pill -->
               <div class="flex items-center gap-1.5 flex-shrink-0">
-                @if (!compact()) {
-                  <span class="hidden sm:inline-flex px-2 py-0.5 rounded-full text-xs font-semibold"
-                        [class]="statusPill(item)">{{ statusLabel(item) | translate }}</span>
-                }
                 <div class="flex items-center gap-1
                             lg:opacity-0 lg:translate-x-2
                             lg:group-hover:opacity-100 lg:group-hover:translate-x-0
@@ -84,6 +81,10 @@ import { Item, CATEGORY_CONFIG, STATUS_CONFIG } from '../../../core/models/item.
                     </svg>
                   </button>
                 </div>
+                @if (!compact()) {
+                  <span class="hidden sm:inline-flex px-2 py-0.5 rounded-full text-xs font-semibold"
+                        [class]="statusPill(item)">{{ statusLabel(item) | translate }}</span>
+                }
               </div>
             </div>
           </div>
@@ -143,11 +144,8 @@ import { Item, CATEGORY_CONFIG, STATUS_CONFIG } from '../../../core/models/item.
                     }
                   </div>
                 </div>
+                <!-- Right: edit/delete (hover on desktop, always on mobile) then status pill -->
                 <div class="flex items-center gap-1.5 flex-shrink-0">
-                  @if (!compact()) {
-                    <span class="hidden sm:inline-flex px-2 py-0.5 rounded-full text-xs font-semibold"
-                          [class]="statusPill(item)">{{ statusLabel(item) | translate }}</span>
-                  }
                   <div class="flex items-center gap-1
                               lg:opacity-0 lg:translate-x-2
                               lg:group-hover:opacity-100 lg:group-hover:translate-x-0
@@ -169,6 +167,10 @@ import { Item, CATEGORY_CONFIG, STATUS_CONFIG } from '../../../core/models/item.
                       </svg>
                     </button>
                   </div>
+                  @if (!compact()) {
+                    <span class="hidden sm:inline-flex px-2 py-0.5 rounded-full text-xs font-semibold"
+                          [class]="statusPill(item)">{{ statusLabel(item) | translate }}</span>
+                  }
                 </div>
               </div>
             </div>
@@ -208,11 +210,8 @@ import { Item, CATEGORY_CONFIG, STATUS_CONFIG } from '../../../core/models/item.
                   }
                 </div>
               </div>
+              <!-- Right: edit/delete (hover on desktop, always on mobile) then status pill -->
               <div class="flex items-center gap-1.5 flex-shrink-0">
-                @if (!compact()) {
-                  <span class="hidden sm:inline-flex px-2 py-0.5 rounded-full text-xs font-semibold"
-                        [class]="statusPill(item)">{{ statusLabel(item) | translate }}</span>
-                }
                 <div class="flex items-center gap-1
                             lg:opacity-0 lg:translate-x-2
                             lg:group-hover:opacity-100 lg:group-hover:translate-x-0
@@ -234,6 +233,10 @@ import { Item, CATEGORY_CONFIG, STATUS_CONFIG } from '../../../core/models/item.
                     </svg>
                   </button>
                 </div>
+                @if (!compact()) {
+                  <span class="hidden sm:inline-flex px-2 py-0.5 rounded-full text-xs font-semibold"
+                        [class]="statusPill(item)">{{ statusLabel(item) | translate }}</span>
+                }
               </div>
             </div>
           </div>
